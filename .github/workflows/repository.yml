@@ -1,0 +1,24 @@
+name: repository
+
+on:
+  pull_request:
+  push:
+    branches: [main, chore/full-code-foundation]
+
+jobs:
+  repository:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: No committed env files
+        run: |
+          if git ls-files | grep -E '(^|/)\.env(\.|$)' | grep -v '^\.env\.example$'; then
+            echo "Committed env file detected"
+            exit 1
+          fi
+      - name: Lightweight secret scan
+        run: |
+          ! git grep -nE 'BEGIN (RSA|OPENSSH|PRIVATE) KEY|AKIA[0-9A-Z]{16}|sk-[A-Za-z0-9_-]{20,}|SUPABASE_SERVICE_ROLE_KEY=.+' -- ':!*.md'
+      - name: Markdown sanity
+        run: |
+          find . -name '*.md' -not -path './node_modules/*' -not -path './.git/*' -print | sort | wc -l

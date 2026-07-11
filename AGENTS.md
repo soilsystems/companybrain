@@ -4,11 +4,10 @@
 
 Before changing code or architecture, read:
 
-1. `START_HERE.md`
-2. `PROJECT_HANDOFF_V2.md` when created
-3. `docs/architecture/*.md`
-4. `docs/decisions/*.md`
-5. The relevant module documentation
+1. `ARCHITECTURE.md`
+2. `docs/architecture/*.md`
+3. `docs/decisions/*.md`
+4. The relevant module documentation
 
 Where legacy no-code documents conflict with the full-code architecture, the new ADRs
 and architecture documents take precedence. Do not silently rewrite historical files.
@@ -17,7 +16,8 @@ and architecture documents take precedence. Do not silently rewrite historical f
 
 - Use small, reviewable commits.
 - Never commit secrets.
-- Do not delete local legacy files without explicit approval.
+- Legacy no-code files may be archived or deleted when recorded in
+  `docs/legacy/LEGACY_FILE_INVENTORY.md` and `docs/legacy/DELETED_FILES.md`.
 - Do not implement unrelated features.
 - Update documentation in the same change as architecture or behavior.
 - Add tests for implemented behavior.

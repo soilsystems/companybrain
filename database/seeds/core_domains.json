@@ -1,0 +1,17 @@
+[
+  {
+    "slug": "market-intelligence",
+    "name": "Market Intelligence",
+    "description": "Dubai Fruits & Vegetables market intelligence."
+  },
+  {
+    "slug": "business-deals",
+    "name": "Business Deals",
+    "description": "Deals, commitments, risks, payment terms, and timelines."
+  },
+  {
+    "slug": "business-knowledge",
+    "name": "Business Knowledge",
+    "description": "Uploaded business documents and internal knowledge."
+  }
+]

@@ -1,0 +1,16 @@
+{
+  "name": "companybrain",
+  "private": true,
+  "packageManager": "pnpm@9.15.4",
+  "scripts": {
+    "dev": "pnpm --filter @companybrain/web dev",
+    "build": "pnpm --filter @companybrain/web build",
+    "lint": "pnpm --filter @companybrain/web lint",
+    "typecheck": "pnpm --filter @companybrain/web typecheck",
+    "test": "pnpm --filter @companybrain/web test",
+    "format": "pnpm --filter @companybrain/web format"
+  },
+  "devDependencies": {
+    "prettier": "3.3.3"
+  }
+}

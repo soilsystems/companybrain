@@ -1,21 +1,28 @@
-# Secrets — NEVER commit real credentials (see .env.example for names only)
+# Secrets - NEVER commit real credentials (see .env.example for names only)
 .env
 .env.*
 !.env.example
 *.key
 *.pem
+*.p8
+*.p12
+*.crt
 credentials.json
 service-account*.json
 gcp-*.json
 *-key.json
 companybrain-*-key.json
+*service-account*.json
 **/secrets/**
 
-# OCR raw outputs & sample reports may be commercially sensitive —
-# commit only anonymized/cleared samples explicitly placed under ocr/samples/
+# OCR raw outputs and sample reports may be commercially sensitive.
 ocr/raw/
 ocr/samples/**/private/
+ocr/spike/**/*.raw.json
+ocr/spike/**/*.truth.csv
 *.original.pdf
+uploads/
+local-uploads/
 
 # OS / editor
 .DS_Store
@@ -24,13 +31,31 @@ Thumbs.db
 .vscode/
 *.swp
 
-# Node (scripts/ utilities only)
+# Node / frontend
 node_modules/
+.pnpm-store/
 npm-debug.log*
+.next/
+out/
 dist/
 build/
+coverage/
+playwright-report/
+test-results/
+*.tsbuildinfo
 
-# Exports staging (working copies before they're committed cleanly)
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Exports / local scratch
 *.tmp
 *.bak
 scratch/
+work/

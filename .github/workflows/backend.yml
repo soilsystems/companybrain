@@ -1,0 +1,25 @@
+name: backend
+
+on:
+  pull_request:
+  push:
+    branches: [main, chore/full-code-foundation]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: uv sync
+      - run: uv run ruff check .
+      - run: uv run black --check .
+      - run: uv run mypy app tests
+      - run: uv run pytest
+      - run: uv run alembic upgrade head --sql > /tmp/migration.sql

@@ -1,0 +1,58 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: companybrain
+      POSTGRES_PASSWORD: companybrain
+      POSTGRES_DB: companybrain
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U companybrain -d companybrain"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/api.Dockerfile
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://companybrain:companybrain@postgres:5432/companybrain
+      DATABASE_MIGRATION_URL: postgresql+psycopg://companybrain:companybrain@postgres:5432/companybrain
+      REDIS_URL: redis://redis:6379/0
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/worker.Dockerfile
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://companybrain:companybrain@postgres:5432/companybrain
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      redis:
+        condition: service_healthy
+
+volumes:
+  postgres-data:
