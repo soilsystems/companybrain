@@ -1,0 +1,64 @@
+{
+  "fixture_id": "report-sample",
+  "source_file": "report-sample.pdf",
+  "market": "dubai_fnv",
+  "report_date": "YYYY-MM-DD",
+  "expected_row_count": 0,
+  "notes": "Hand-verified expected staged rows AFTER cleaning/normalization. Compare against upload_rows before human review. Copy per fixture and fill from the OCR spike truth file.",
+  "rows": [
+    {
+      "row_index": 1,
+      "raw": {
+        "product": "TOMATO ROMA",
+        "origin": "JORDAN",
+        "shipment": "BY LAND",
+        "weight": "5KG",
+        "packing": "BOX",
+        "price": "12.00"
+      },
+      "expected": {
+        "product_slug": "tomato",
+        "variant_name": "Roma",
+        "country_iso": "JO",
+        "shipment_code": "land",
+        "packing_code": "box",
+        "packing_raw": "BOX",
+        "unit": "box",
+        "unit_weight_kg": 5,
+        "price_raw": "12.00",
+        "price": 12.00,
+        "price_per_kg": 2.40,
+        "is_available": true,
+        "validation_status": "ok",
+        "validation_flags": []
+      }
+    },
+    {
+      "row_index": 2,
+      "raw": {
+        "product": "ONION RED",
+        "origin": "INDIA",
+        "shipment": "BY SEA",
+        "weight": "25KG",
+        "packing": "BAG",
+        "price": "NA"
+      },
+      "expected": {
+        "product_slug": "onion",
+        "variant_name": "Red",
+        "country_iso": "IN",
+        "shipment_code": "sea",
+        "packing_code": "bag",
+        "packing_raw": "BAG",
+        "unit": "bag",
+        "unit_weight_kg": 25,
+        "price_raw": "NA",
+        "price": null,
+        "price_per_kg": null,
+        "is_available": false,
+        "validation_status": "ok",
+        "validation_flags": []
+      }
+    }
+  ]
+}

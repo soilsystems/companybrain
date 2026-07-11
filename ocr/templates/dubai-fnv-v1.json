@@ -1,0 +1,36 @@
+{
+  "template_id": "dubai-fnv-v1",
+  "market": "dubai_fnv",
+  "version": 1,
+  "status": "draft",
+  "description": "Extraction config for the Dubai Fruits & Vegetables daily market report (scanned image). Draft — validate and adjust during the Phase 0 OCR spike.",
+  "file_types": ["pdf", "image"],
+  "docai": {
+    "processor_type": "CUSTOM_EXTRACTOR",
+    "processor_id": "SET_IN_ENV:DOCAI_PROCESSOR_ID",
+    "processor_version": "SET_IN_ENV:DOCAI_PROCESSOR_VERSION",
+    "location": "SET_IN_ENV:GCP_LOCATION"
+  },
+  "confidence_threshold": 0.85,
+  "expected_rows_range": [200, 320],
+  "fields": [
+    { "key": "product_raw",  "docai_entity": "product",   "required": true,  "notes": "Canonical product resolved later via product_aliases" },
+    { "key": "origin_raw",   "docai_entity": "origin",    "required": true,  "notes": "Country of origin; normalized via countries.synonyms" },
+    { "key": "shipment_raw", "docai_entity": "shipment",  "required": false, "notes": "Air/Sea/Land/Local; normalized via shipment_types.synonyms" },
+    { "key": "weight_raw",   "docai_entity": "weight",    "required": false, "notes": "Parsed to unit + unit_weight_kg" },
+    { "key": "packing_raw",  "docai_entity": "packing",   "required": false, "notes": "Original kept as packing_raw; normalized to packing_type" },
+    { "key": "price_raw",    "docai_entity": "price",     "required": true,  "notes": "Preserve EXACTLY incl. 'NA'; numeric -> price, NA/blank -> price null; is_available derived" },
+    { "key": "report_date",  "docai_entity": "date",      "required": false, "notes": "Usually one date for the whole report header; fallback = upload report_date" }
+  ],
+  "postprocess": {
+    "strip_header_footer": true,
+    "merge_cross_page_rows": true,
+    "drop_patterns": ["^page \\d+", "^total", "^grand total"],
+    "date_source": "report_header_then_upload_default"
+  },
+  "review": {
+    "flag_below_confidence": true,
+    "flag_missing_required": true,
+    "anomaly_threshold_pct_ref": "organizations.settings.anomaly_threshold_pct"
+  }
+}

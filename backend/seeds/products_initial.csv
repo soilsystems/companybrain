@@ -1,0 +1,43 @@
+name,slug,category_slug,default_unit,variants,aliases
+Tomato,tomato,vegetables,box,Standard|Roma|Cherry|Plum,TOMATO|TOMATOES|TAMATAR|TAMATO
+Onion,onion,roots-tubers,bag,Red|White|Yellow,ONION|ONIONS|PYAZ|BASAL
+Potato,potato,roots-tubers,bag,Standard|Red|Baby,POTATO|POTATOES|ALOO|BATATA
+Garlic,garlic,roots-tubers,box,Standard|Peeled,GARLIC|LASAN|THOOM
+Ginger,ginger,roots-tubers,box,Standard,GINGER|ADRAK|ZANJABEEL
+Carrot,carrot,roots-tubers,bag,Standard|Baby,CARROT|CARROTS|GAJAR|JAZAR
+Cucumber,cucumber,vegetables,box,Standard|Baby,CUCUMBER|KHEERA|KHIYAR
+Cabbage,cabbage,vegetables,box,Green|Red|Chinese,CABBAGE|PATTA GOBI|MALFOOF
+Cauliflower,cauliflower,vegetables,box,Standard,CAULIFLOWER|PHOOL GOBI|QARNABEET
+Capsicum,capsicum,vegetables,box,Green|Red|Yellow,CAPSICUM|BELL PEPPER|SHIMLA MIRCH|FILFIL
+Chilli,chilli,vegetables,box,Green|Red|Long,CHILLI|CHILLIES|GREEN CHILI|MIRCHI|FILFIL HAR
+Eggplant,eggplant,vegetables,box,Long|Round|Baby,EGGPLANT|BRINJAL|AUBERGINE|BAINGAN|BADINJAN
+Okra,okra,vegetables,box,Standard,OKRA|LADY FINGER|BHINDI|BAMIA
+Beans,beans,vegetables,box,French|Long,BEANS|GREEN BEANS|FASOLIA|LOBIA
+Peas,peas,vegetables,box,Standard,PEAS|GREEN PEAS|MATAR|BAZELA
+Pumpkin,pumpkin,vegetables,box,Standard,PUMPKIN|KADDU|QARA
+Bitter Gourd,bitter-gourd,vegetables,box,Standard,BITTER GOURD|KARELA|BITTERGOURD
+Bottle Gourd,bottle-gourd,vegetables,box,Standard,BOTTLE GOURD|LAUKI|DOODHI
+Zucchini,zucchini,vegetables,box,Green|Yellow,ZUCCHINI|COURGETTE|KOOSA
+Lettuce,lettuce,leafy-greens,box,Iceberg|Romaine,LETTUCE|KHAS
+Spinach,spinach,leafy-greens,bunch,Standard,SPINACH|PALAK|SABANEKH
+Coriander,coriander,herbs,bunch,Standard,CORIANDER|CILANTRO|DHANIYA|KUZBARA
+Mint,mint,herbs,bunch,Standard,MINT|PUDINA|NAANA
+Parsley,parsley,herbs,bunch,Standard,PARSLEY|BAQDONES
+Dill,dill,herbs,bunch,Standard,DILL|SHABINT
+Apple,apple,fruits,carton,Red|Green|Royal Gala|Fuji,APPLE|APPLES|SEB|TUFAH
+Banana,banana,fruits,carton,Standard|Baby,BANANA|BANANAS|KELA|MOZ
+Orange,orange,citrus,carton,Valencia|Navel,ORANGE|ORANGES|SANTRA|BURTUQAL
+Mango,mango,fruits,box,Alphonso|Kesar|Badami|Kent,MANGO|MANGOES|AAM|MANGA
+Grapes,grapes,fruits,box,Red|Green|Black,GRAPES|ANGOOR|INAB
+Watermelon,watermelon,melons,piece,Standard,WATERMELON|TARBOOZ|BATTIKH
+Melon,melon,melons,piece,Musk|Honeydew,MELON|MUSKMELON|KHARBOOZA|SHAMMAM
+Lemon,lemon,citrus,box,Standard,LEMON|LIMON|NIMBU|LEEM
+Lime,lime,citrus,box,Standard,LIME|LIMES|GREEN LEMON
+Pomegranate,pomegranate,fruits,box,Standard,POMEGRANATE|ANAR|RUMMAN
+Strawberry,strawberry,berries,punnet,Standard,STRAWBERRY|STRAWBERRIES|FARAWLA
+Pineapple,pineapple,exotic,piece,Standard,PINEAPPLE|ANANAS
+Papaya,papaya,exotic,box,Standard,PAPAYA|PAPITA|PAPAW
+Kiwi,kiwi,exotic,tray,Standard,KIWI|KIWIFRUIT
+Avocado,avocado,exotic,box,Standard,AVOCADO|AVOCADOS
+Dragon Fruit,dragon-fruit,exotic,box,Red|White,DRAGON FRUIT|DRAGONFRUIT|PITAYA|PITAHAYA
+Dates,dates,fruits,box,Fresh|Khalas,DATES|TAMR|RUTAB

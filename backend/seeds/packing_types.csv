@@ -1,0 +1,11 @@
+name,code,synonyms,is_active
+Box,box,BOX|BOXES|BX|CARTON BOX,true
+Carton,carton,CTN|CARTONS|CARTOON|CTON,true
+Bag,bag,BAG|BAGS|BG|POLY BAG,true
+Sack,sack,SACK|SACKS|GUNNY|JUTE BAG,true
+Net,net,NET|NETS|MESH,true
+Bunch,bunch,BUNCH|BUNCHES|BND,true
+Tray,tray,TRAY|TRAYS|TRY,true
+Punnet,punnet,PUNNET|PUNNETS|CLAMSHELL,true
+Crate,crate,CRATE|CRATES|PLASTIC CRATE,true
+Loose,loose,LOOSE|LOSE|BULK|PER KG,true

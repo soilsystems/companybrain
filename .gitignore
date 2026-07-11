@@ -1,0 +1,36 @@
+# Secrets — NEVER commit real credentials (see .env.example for names only)
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+credentials.json
+service-account*.json
+gcp-*.json
+*-key.json
+companybrain-*-key.json
+**/secrets/**
+
+# OCR raw outputs & sample reports may be commercially sensitive —
+# commit only anonymized/cleared samples explicitly placed under ocr/samples/
+ocr/raw/
+ocr/samples/**/private/
+*.original.pdf
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Node (scripts/ utilities only)
+node_modules/
+npm-debug.log*
+dist/
+build/
+
+# Exports staging (working copies before they're committed cleanly)
+*.tmp
+*.bak
+scratch/

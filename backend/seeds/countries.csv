@@ -1,0 +1,34 @@
+name,iso_code,region,flag_emoji,synonyms,is_active
+United Arab Emirates,AE,gcc,🇦🇪,UAE|U.A.E|EMIRATES|LOCAL|DUBAI|AL AIN,true
+India,IN,south_asia,🇮🇳,IND|INDIAN|BHARAT,true
+Pakistan,PK,south_asia,🇵🇰,PAK|PKT|PAKISTANI,true
+Iran,IR,south_asia,🇮🇷,IRANIAN|PERSIA|I.R.IRAN,true
+Jordan,JO,gcc,🇯🇴,JOR|JORDANIAN,true
+Egypt,EG,africa,🇪🇬,EGY|EGYPTIAN|EGP,true
+Saudi Arabia,SA,gcc,🇸🇦,KSA|SAUDI|K.S.A,true
+Oman,OM,gcc,🇴🇲,OMANI|SULTANATE,true
+Yemen,YE,gcc,🇾🇪,YEM|YEMENI,true
+Lebanon,LB,africa,🇱🇧,LEB|LEBANESE,true
+Turkey,TR,europe,🇹🇷,TUR|TURKISH|TURKIYE,true
+Syria,SY,africa,🇸🇾,SYR|SYRIAN,true
+China,CN,east_asia,🇨🇳,CHN|CHINESE|PRC,true
+Netherlands,NL,europe,🇳🇱,HOLLAND|DUTCH|NED,true
+Spain,ES,europe,🇪🇸,ESP|SPANISH,true
+Italy,IT,europe,🇮🇹,ITA|ITALIAN,true
+France,FR,europe,🇫🇷,FRA|FRENCH,true
+Kenya,KE,africa,🇰🇪,KEN|KENYAN,true
+Ethiopia,ET,africa,🇪🇹,ETH|ETHIOPIAN,true
+Tanzania,TZ,africa,🇹🇿,TZA|TANZANIAN,true
+South Africa,ZA,africa,🇿🇦,RSA|S.AFRICA|SOUTH AFRICAN,true
+Morocco,MA,africa,🇲🇦,MAR|MOROCCAN,true
+Sri Lanka,LK,south_asia,🇱🇰,CEYLON|LKA|SRILANKA,true
+Bangladesh,BD,south_asia,🇧🇩,BGD|BANGLA,true
+Thailand,TH,east_asia,🇹🇭,THA|THAI,true
+Vietnam,VN,east_asia,🇻🇳,VNM|VIET NAM,true
+Philippines,PH,east_asia,🇵🇭,PHL|FILIPINO,true
+Australia,AU,oceania,🇦🇺,AUS|AUSSIE|AUSTRALIAN,true
+New Zealand,NZ,oceania,🇳🇿,NZL|N.ZEALAND,true
+United States,US,americas,🇺🇸,USA|U.S.A|AMERICA|AMERICAN,true
+Mexico,MX,americas,🇲🇽,MEX|MEXICAN,true
+Chile,CL,americas,🇨🇱,CHL|CHILEAN,true
+Peru,PE,americas,🇵🇪,PER|PERUVIAN,true

@@ -1,0 +1,10 @@
+name,slug,parent_slug,sort_order
+Vegetables,vegetables,,10
+Leafy Greens,leafy-greens,vegetables,11
+Roots & Tubers,roots-tubers,vegetables,12
+Herbs,herbs,vegetables,13
+Fruits,fruits,,20
+Citrus,citrus,fruits,21
+Melons,melons,fruits,22
+Berries,berries,fruits,23
+Exotic,exotic,fruits,24
