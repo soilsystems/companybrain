@@ -324,13 +324,13 @@ export function BusinessChatWorkspace() {
   }
 
   return (
-    <div className="grid min-h-[680px] gap-5 lg:grid-cols-[300px_minmax(0,1fr)]">
-      <aside className="rounded-md border border-border bg-white p-4">
+    <div className="grid h-[calc(100vh-190px)] min-h-[520px] gap-5 lg:grid-cols-[300px_minmax(0,1fr)]">
+      <aside className="flex min-h-0 flex-col rounded-md border border-border bg-white p-4">
         <Button className="w-full" onClick={() => startChat()} type="button">
           <MessageSquarePlus className="h-4 w-4" />
           New chat
         </Button>
-        <div className="mt-4 space-y-2">
+        <div className="mt-4 min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">
           {sessions.map((session) => {
             const business = businesses.find(
               (item) => item.id === session.businessId,
@@ -440,7 +440,7 @@ export function BusinessChatWorkspace() {
             </div>
           </div>
         </div>
-        <div className="flex-1 space-y-4 overflow-y-auto bg-slate-50 p-4">
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto bg-slate-50 p-4">
           {activeSession?.messages.map((message) => (
             <div
               className={
@@ -454,10 +454,10 @@ export function BusinessChatWorkspace() {
             </div>
           ))}
         </div>
-        <div className="border-t border-border p-4">
+        <div className="shrink-0 border-t border-border p-4">
           <div className="flex gap-3">
             <textarea
-              className="min-h-12 flex-1 resize-none rounded-md border border-border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
+              className="min-h-14 flex-1 resize-none rounded-md border border-border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
               onChange={(event) => setDraft(event.target.value)}
               onKeyDown={(event) => {
                 if (event.key === "Enter" && !event.shiftKey) {
@@ -465,7 +465,7 @@ export function BusinessChatWorkspace() {
                   sendMessage();
                 }
               }}
-              placeholder="Ask about this business"
+              placeholder="Type your question about the uploaded document"
               value={draft}
             />
             <Button
@@ -480,6 +480,7 @@ export function BusinessChatWorkspace() {
               ) : (
                 <Send className="h-4 w-4" />
               )}
+              Send
             </Button>
           </div>
         </div>
