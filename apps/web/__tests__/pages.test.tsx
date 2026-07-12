@@ -62,7 +62,7 @@ describe("pages", () => {
 
     expect(
       await screen.findByRole("link", { name: /Ask in chat/ }),
-    ).toHaveAttribute("href", "/app/chat");
+    ).toHaveAttribute("href", "/app/chat?businessId=dubai-fruits-trading");
     expect(
       screen.getByRole("button", { name: "Clear test documents" }),
     ).toBeInTheDocument();

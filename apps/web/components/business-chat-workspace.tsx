@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   FileText,
+  LoaderCircle,
   MessageSquarePlus,
   Pencil,
   Send,
@@ -32,6 +33,7 @@ type ChatSession = {
 };
 
 const storageKey = "companybrain.chat.sessions.v1";
+const chatTimeoutMs = 75000;
 
 function createId() {
   return (
@@ -71,15 +73,40 @@ export function BusinessChatWorkspace() {
       setDocuments(getStoredDocuments());
     }
 
+    const requestedBusinessId =
+      new URLSearchParams(window.location.search).get("businessId") ?? "";
+    const validRequestedBusiness = businesses.some(
+      (business) => business.id === requestedBusinessId,
+    )
+      ? requestedBusinessId
+      : "";
     let loadedSavedSession = false;
     const saved = window.localStorage.getItem(storageKey);
     if (saved) {
       try {
         const parsed = JSON.parse(saved) as ChatSession[];
         if (Array.isArray(parsed) && parsed.length > 0) {
-          setSessions(parsed);
-          setActiveId(parsed[0]?.id ?? "");
-          setBusinessId(parsed[0]?.businessId ?? businesses[0].id);
+          const requestedSession = validRequestedBusiness
+            ? parsed.find(
+                (session) => session.businessId === validRequestedBusiness,
+              )
+            : undefined;
+          const activeSession = requestedSession ?? parsed[0];
+          const nextSessions =
+            validRequestedBusiness && !requestedSession
+              ? [createSession(validRequestedBusiness), ...parsed]
+              : parsed;
+          const nextActiveSession =
+            validRequestedBusiness && !requestedSession
+              ? nextSessions[0]
+              : activeSession;
+          setSessions(nextSessions);
+          setActiveId(nextActiveSession?.id ?? "");
+          setBusinessId(
+            nextActiveSession?.businessId ??
+              validRequestedBusiness ??
+              businesses[0].id,
+          );
           loadedSavedSession = true;
         }
       } catch {
@@ -88,9 +115,10 @@ export function BusinessChatWorkspace() {
     }
 
     if (!loadedSavedSession) {
-      const first = createSession(businesses[0].id);
+      const first = createSession(validRequestedBusiness || businesses[0].id);
       setSessions([first]);
       setActiveId(first.id);
+      setBusinessId(first.businessId);
     }
 
     refreshDocuments();
@@ -196,7 +224,10 @@ export function BusinessChatWorkspace() {
     const assistantMessage: ChatMessage = {
       id: createId(),
       role: "assistant",
-      content: `Reading ${activeDocuments.length} document(s) for ${selectedBusiness.name}...`,
+      content:
+        activeDocuments.length > 0
+          ? `Gemini is reading ${activeDocuments.length} document(s) for ${selectedBusiness.name}. PDFs can take up to a minute.`
+          : `No ready documents found for ${selectedBusiness.name}. Upload a test document or switch to the business you uploaded under.`,
     };
     const requestHistory = activeSession.messages
       .filter((message) => !message.content.startsWith("Reading "))
@@ -224,11 +255,14 @@ export function BusinessChatWorkspace() {
     setIsSending(true);
 
     try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), chatTimeoutMs);
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+        signal: controller.signal,
         body: JSON.stringify({
           businessId: activeSession.businessId,
           question: content,
@@ -236,6 +270,7 @@ export function BusinessChatWorkspace() {
           documents: activeDocuments,
         }),
       });
+      clearTimeout(timeout);
       const payload = (await response.json()) as {
         answer?: string;
         error?: string;
@@ -260,7 +295,11 @@ export function BusinessChatWorkspace() {
             : session,
         ),
       );
-    } catch {
+    } catch (error) {
+      const nextContent =
+        error instanceof DOMException && error.name === "AbortError"
+          ? "Gemini is taking longer than expected with this document. Try asking again, or upload a smaller text/PDF test file."
+          : "The assistant could not reach the Gemini route. Please try again.";
       setSessions((current) =>
         current.map((session) =>
           session.id === activeSession.id
@@ -270,8 +309,7 @@ export function BusinessChatWorkspace() {
                   message.id === assistantMessage.id
                     ? {
                         ...message,
-                        content:
-                          "The assistant could not reach the Gemini route. Please try again.",
+                        content: nextContent,
                       }
                     : message,
                 ),
@@ -392,6 +430,13 @@ export function BusinessChatWorkspace() {
               <p className="mt-1 text-xs text-muted-foreground">
                 {activeDocuments.length} ready for this chat
               </p>
+              {activeDocuments.length > 0 ? (
+                <p className="mt-1 truncate text-xs text-slate-600">
+                  {activeDocuments
+                    .map((document) => document.filename)
+                    .join(", ")}
+                </p>
+              ) : null}
             </div>
           </div>
         </div>
@@ -430,7 +475,11 @@ export function BusinessChatWorkspace() {
               title="Send"
               type="button"
             >
-              <Send className="h-4 w-4" />
+              {isSending ? (
+                <LoaderCircle className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
             </Button>
           </div>
         </div>

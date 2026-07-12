@@ -217,7 +217,7 @@ export function DocumentUploadWorkspace() {
         {selectedItems.length > 0 ? (
           <div className="mt-5 space-y-2">
             <Button asChild className="w-full">
-              <Link href="/app/chat">
+              <Link href={`/app/chat?businessId=${businessId}`}>
                 <MessageSquare className="h-4 w-4" />
                 Ask in chat
               </Link>

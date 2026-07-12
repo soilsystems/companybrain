@@ -4,6 +4,7 @@ import { z } from "zod";
 import { buildGeminiInput, geminiModel, readGeminiText } from "@/lib/gemini";
 
 export const runtime = "nodejs";
+const geminiTimeoutMs = 70000;
 
 const documentSchema = z.object({
   id: z.string(),
@@ -50,6 +51,8 @@ export async function POST(request: Request) {
   }
 
   const input = buildGeminiInput(parsed.data);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), geminiTimeoutMs);
   const response = await fetch(
     "https://generativelanguage.googleapis.com/v1beta/interactions",
     {
@@ -58,6 +61,7 @@ export async function POST(request: Request) {
         "Content-Type": "application/json",
         "x-goog-api-key": apiKey,
       },
+      signal: controller.signal,
       body: JSON.stringify({
         model: process.env.GEMINI_MODEL || geminiModel,
         input,
@@ -69,14 +73,41 @@ export async function POST(request: Request) {
         },
       }),
     },
-  );
+  ).catch((error: unknown) => {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      return null;
+    }
+    throw error;
+  });
+  clearTimeout(timeout);
 
-  const payload = (await response.json().catch(() => ({}))) as unknown;
-  if (!response.ok) {
+  if (!response) {
     return NextResponse.json(
       {
         error:
-          "Gemini could not answer right now. Check the API key, model access, and uploaded document size.",
+          "Gemini is still reading this document. Try a smaller test file or ask again in a moment.",
+      },
+      { status: 504 },
+    );
+  }
+
+  const payload = (await response.json().catch(() => ({}))) as unknown;
+  if (!response.ok) {
+    const geminiError =
+      payload &&
+      typeof payload === "object" &&
+      "error" in payload &&
+      payload.error &&
+      typeof payload.error === "object" &&
+      "message" in payload.error &&
+      typeof payload.error.message === "string"
+        ? payload.error.message
+        : "";
+    return NextResponse.json(
+      {
+        error: geminiError
+          ? `Gemini could not process this request: ${geminiError}`
+          : "Gemini could not answer right now. Check the API key, model access, and uploaded document size.",
       },
       { status: response.status },
     );
