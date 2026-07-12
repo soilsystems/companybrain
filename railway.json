@@ -5,7 +5,7 @@
     "buildCommand": "pnpm --filter @companybrain/web build"
   },
   "deploy": {
-    "startCommand": "cd apps/web && pnpm start -- -p $PORT",
+    "startCommand": "cd apps/web && pnpm exec next start -p $PORT",
     "healthcheckPath": "/",
     "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE",
