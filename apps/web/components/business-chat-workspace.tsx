@@ -1,10 +1,20 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { MessageSquarePlus, Pencil, Send, Trash2 } from "lucide-react";
+import {
+  FileText,
+  MessageSquarePlus,
+  Pencil,
+  Send,
+  Trash2,
+} from "lucide-react";
 
 import { BusinessSelect } from "@/components/business-select";
 import { Button } from "@/components/ui/button";
+import {
+  getStoredDocuments,
+  type StoredBusinessDocument,
+} from "@/lib/document-store";
 import { businesses } from "@/lib/foundation-data";
 
 type ChatMessage = {
@@ -39,7 +49,7 @@ function createSession(businessId: string): ChatSession {
         id: createId(),
         role: "assistant",
         content:
-          "Choose a business context, then ask a question. Backend AI routing is the next API slice.",
+          "Upload documents for a business, choose that business here, then ask a question.",
       },
     ],
     updatedAt: new Date().toISOString(),
@@ -53,23 +63,46 @@ export function BusinessChatWorkspace() {
   const [draft, setDraft] = useState("");
   const [editingId, setEditingId] = useState<string>("");
   const [editingTitle, setEditingTitle] = useState("");
+  const [documents, setDocuments] = useState<StoredBusinessDocument[]>([]);
+  const [isSending, setIsSending] = useState(false);
 
   useEffect(() => {
+    function refreshDocuments() {
+      setDocuments(getStoredDocuments());
+    }
+
+    let loadedSavedSession = false;
     const saved = window.localStorage.getItem(storageKey);
     if (saved) {
       try {
         const parsed = JSON.parse(saved) as ChatSession[];
-        setSessions(parsed);
-        setActiveId(parsed[0]?.id ?? "");
-        setBusinessId(parsed[0]?.businessId ?? businesses[0].id);
-        return;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setSessions(parsed);
+          setActiveId(parsed[0]?.id ?? "");
+          setBusinessId(parsed[0]?.businessId ?? businesses[0].id);
+          loadedSavedSession = true;
+        }
       } catch {
         window.localStorage.removeItem(storageKey);
       }
     }
-    const first = createSession(businesses[0].id);
-    setSessions([first]);
-    setActiveId(first.id);
+
+    if (!loadedSavedSession) {
+      const first = createSession(businesses[0].id);
+      setSessions([first]);
+      setActiveId(first.id);
+    }
+
+    refreshDocuments();
+    window.addEventListener("storage", refreshDocuments);
+    window.addEventListener("companybrain:documents-changed", refreshDocuments);
+    return () => {
+      window.removeEventListener("storage", refreshDocuments);
+      window.removeEventListener(
+        "companybrain:documents-changed",
+        refreshDocuments,
+      );
+    };
   }, []);
 
   useEffect(() => {
@@ -81,6 +114,15 @@ export function BusinessChatWorkspace() {
   const activeSession = useMemo(
     () => sessions.find((session) => session.id === activeId),
     [activeId, sessions],
+  );
+  const activeDocuments = useMemo(
+    () =>
+      documents.filter(
+        (document) =>
+          document.businessId === businessId &&
+          document.status === "Ready for Gemini",
+      ),
+    [businessId, documents],
   );
 
   function startChat(nextBusinessId = businessId) {
@@ -137,9 +179,9 @@ export function BusinessChatWorkspace() {
     );
   }
 
-  function sendMessage() {
+  async function sendMessage() {
     const content = draft.trim();
-    if (!content || !activeSession) {
+    if (!content || !activeSession || isSending) {
       return;
     }
 
@@ -154,8 +196,14 @@ export function BusinessChatWorkspace() {
     const assistantMessage: ChatMessage = {
       id: createId(),
       role: "assistant",
-      content: `This question is scoped to ${selectedBusiness.name}. The AI endpoint is not connected yet, so no business claim is generated.`,
+      content: `Reading ${activeDocuments.length} document(s) for ${selectedBusiness.name}...`,
     };
+    const requestHistory = activeSession.messages
+      .filter((message) => !message.content.startsWith("Reading "))
+      .map((message) => ({
+        role: message.role,
+        content: message.content,
+      }));
 
     setSessions((current) =>
       current.map((session) =>
@@ -173,6 +221,68 @@ export function BusinessChatWorkspace() {
       ),
     );
     setDraft("");
+    setIsSending(true);
+
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          businessId: activeSession.businessId,
+          question: content,
+          history: requestHistory,
+          documents: activeDocuments,
+        }),
+      });
+      const payload = (await response.json()) as {
+        answer?: string;
+        error?: string;
+      };
+      const nextContent =
+        payload.answer ??
+        payload.error ??
+        "The assistant could not answer this request.";
+
+      setSessions((current) =>
+        current.map((session) =>
+          session.id === activeSession.id
+            ? {
+                ...session,
+                messages: session.messages.map((message) =>
+                  message.id === assistantMessage.id
+                    ? { ...message, content: nextContent }
+                    : message,
+                ),
+                updatedAt: new Date().toISOString(),
+              }
+            : session,
+        ),
+      );
+    } catch {
+      setSessions((current) =>
+        current.map((session) =>
+          session.id === activeSession.id
+            ? {
+                ...session,
+                messages: session.messages.map((message) =>
+                  message.id === assistantMessage.id
+                    ? {
+                        ...message,
+                        content:
+                          "The assistant could not reach the Gemini route. Please try again.",
+                      }
+                    : message,
+                ),
+                updatedAt: new Date().toISOString(),
+              }
+            : session,
+        ),
+      );
+    } finally {
+      setIsSending(false);
+    }
   }
 
   return (
@@ -255,24 +365,35 @@ export function BusinessChatWorkspace() {
 
       <section className="flex min-h-0 flex-col rounded-md border border-border bg-white">
         <div className="border-b border-border p-4">
-          <BusinessSelect
-            label="Chat business context"
-            onChange={(value) => {
-              if (!activeSession || activeSession.messages.length > 1) {
-                startChat(value);
-                return;
-              }
-              setBusinessId(value);
-              setSessions((current) =>
-                current.map((session) =>
-                  session.id === activeSession.id
-                    ? { ...session, businessId: value }
-                    : session,
-                ),
-              );
-            }}
-            value={businessId}
-          />
+          <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_220px]">
+            <BusinessSelect
+              label="Chat business context"
+              onChange={(value) => {
+                if (!activeSession || activeSession.messages.length > 1) {
+                  startChat(value);
+                  return;
+                }
+                setBusinessId(value);
+                setSessions((current) =>
+                  current.map((session) =>
+                    session.id === activeSession.id
+                      ? { ...session, businessId: value }
+                      : session,
+                  ),
+                );
+              }}
+              value={businessId}
+            />
+            <div className="rounded-md border border-border bg-slate-50 px-3 py-2">
+              <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                <FileText className="h-4 w-4" />
+                Documents
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {activeDocuments.length} ready for this chat
+              </p>
+            </div>
+          </div>
         </div>
         <div className="flex-1 space-y-4 overflow-y-auto bg-slate-50 p-4">
           {activeSession?.messages.map((message) => (
@@ -304,6 +425,7 @@ export function BusinessChatWorkspace() {
             />
             <Button
               aria-label="Send message"
+              disabled={isSending}
               onClick={sendMessage}
               title="Send"
               type="button"

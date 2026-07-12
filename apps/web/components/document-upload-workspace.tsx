@@ -1,19 +1,16 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FilePlus2, FileText, Upload } from "lucide-react";
 
 import { BusinessSelect } from "@/components/business-select";
 import { Button } from "@/components/ui/button";
 import { businesses } from "@/lib/foundation-data";
-
-type UploadItem = {
-  id: string;
-  businessId: string;
-  filename: string;
-  size: string;
-  status: "Ready for API" | "Queued locally";
-};
+import {
+  getStoredDocuments,
+  saveStoredDocuments,
+  type StoredBusinessDocument,
+} from "@/lib/document-store";
 
 function formatBytes(bytes: number) {
   if (bytes < 1024 * 1024) {
@@ -28,9 +25,39 @@ function createId() {
   );
 }
 
+function readAsDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.addEventListener("load", () => resolve(String(reader.result)));
+    reader.addEventListener("error", () => reject(reader.error));
+    reader.readAsDataURL(file);
+  });
+}
+
+function readAsText(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.addEventListener("load", () => resolve(String(reader.result)));
+    reader.addEventListener("error", () => reject(reader.error));
+    reader.readAsText(file);
+  });
+}
+
+function isTextLike(file: File) {
+  const name = file.name.toLowerCase();
+  return (
+    file.type.startsWith("text/") ||
+    name.endsWith(".csv") ||
+    name.endsWith(".json") ||
+    name.endsWith(".md") ||
+    name.endsWith(".txt")
+  );
+}
+
 export function DocumentUploadWorkspace() {
   const [businessId, setBusinessId] = useState(businesses[0].id);
-  const [items, setItems] = useState<UploadItem[]>([]);
+  const [items, setItems] = useState<StoredBusinessDocument[]>([]);
+  const [error, setError] = useState("");
   const selectedBusiness = useMemo(
     () =>
       businesses.find((business) => business.id === businessId) ??
@@ -42,29 +69,53 @@ export function DocumentUploadWorkspace() {
     [businessId, items],
   );
 
-  function handleFiles(files: FileList | null) {
+  useEffect(() => {
+    setItems(getStoredDocuments());
+  }, []);
+
+  async function handleFiles(files: FileList | null) {
     if (!files?.length) {
       return;
     }
 
-    const nextItems = Array.from(files).map((file) => ({
-      id: `${file.name}-${file.lastModified}-${createId()}`,
-      businessId,
-      filename: file.name,
-      size: formatBytes(file.size),
-      status: "Queued locally" as const,
-    }));
-    setItems((current) => [...nextItems, ...current]);
-  }
+    setError("");
 
-  function createUploadIntent() {
-    setItems((current) =>
-      current.map((item) =>
-        item.businessId === businessId
-          ? { ...item, status: "Ready for API" }
-          : item,
-      ),
-    );
+    try {
+      const nextItems = await Promise.all(
+        Array.from(files).map(async (file) => {
+          const baseItem = {
+            id: `${file.name}-${file.lastModified}-${createId()}`,
+            businessId,
+            filename: file.name,
+            mimeType: file.type || "application/octet-stream",
+            size: formatBytes(file.size),
+            status: "Ready for Gemini" as const,
+            uploadedAt: new Date().toISOString(),
+          };
+
+          if (isTextLike(file)) {
+            return {
+              ...baseItem,
+              text: await readAsText(file),
+            };
+          }
+
+          const dataUrl = await readAsDataUrl(file);
+          return {
+            ...baseItem,
+            data: dataUrl.split(",")[1] ?? "",
+          };
+        }),
+      );
+
+      setItems((current) => {
+        const next = [...nextItems, ...current];
+        saveStoredDocuments(next);
+        return next;
+      });
+    } catch {
+      setError("Could not read one of the selected files.");
+    }
   }
 
   return (
@@ -81,8 +132,8 @@ export function DocumentUploadWorkspace() {
             Add business documents
           </span>
           <span className="mt-2 max-w-md text-sm text-slate-600">
-            Files stay local in this foundation screen until the signed upload
-            API and Supabase Storage flow are connected.
+            Files are stored in this browser for test Q&A and sent to Gemini
+            only when you ask a chat question.
           </span>
           <input
             className="sr-only"
@@ -91,6 +142,7 @@ export function DocumentUploadWorkspace() {
             type="file"
           />
         </label>
+        {error ? <p className="mt-3 text-sm text-red-700">{error}</p> : null}
       </div>
 
       <aside className="rounded-md border border-border bg-white p-5">
@@ -130,13 +182,8 @@ export function DocumentUploadWorkspace() {
             ))
           )}
         </div>
-        <Button
-          className="mt-5 w-full"
-          disabled={selectedItems.length === 0}
-          onClick={createUploadIntent}
-          type="button"
-        >
-          Create upload intent
+        <Button className="mt-5 w-full" disabled type="button">
+          {selectedItems.length} ready for chat
         </Button>
       </aside>
     </div>
