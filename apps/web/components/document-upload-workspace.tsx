@@ -1,7 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { FilePlus2, FileText, Upload } from "lucide-react";
+import Link from "next/link";
+import {
+  FilePlus2,
+  FileText,
+  MessageSquare,
+  Trash2,
+  Upload,
+} from "lucide-react";
 
 import { BusinessSelect } from "@/components/business-select";
 import { Button } from "@/components/ui/button";
@@ -118,6 +125,22 @@ export function DocumentUploadWorkspace() {
     }
   }
 
+  function removeDocument(documentId: string) {
+    setItems((current) => {
+      const next = current.filter((item) => item.id !== documentId);
+      saveStoredDocuments(next);
+      return next;
+    });
+  }
+
+  function clearSelectedDocuments() {
+    setItems((current) => {
+      const next = current.filter((item) => item.businessId !== businessId);
+      saveStoredDocuments(next);
+      return next;
+    });
+  }
+
   return (
     <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
       <div className="rounded-md border border-border bg-white p-5">
@@ -177,14 +200,43 @@ export function DocumentUploadWorkspace() {
                       {item.status}
                     </p>
                   </div>
+                  <button
+                    aria-label={`Remove ${item.filename}`}
+                    className="rounded-md border border-border p-1.5 text-slate-500 hover:bg-slate-50"
+                    onClick={() => removeDocument(item.id)}
+                    title="Remove"
+                    type="button"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
                 </div>
               </div>
             ))
           )}
         </div>
-        <Button className="mt-5 w-full" disabled type="button">
-          {selectedItems.length} ready for chat
-        </Button>
+        {selectedItems.length > 0 ? (
+          <div className="mt-5 space-y-2">
+            <Button asChild className="w-full">
+              <Link href="/app/chat">
+                <MessageSquare className="h-4 w-4" />
+                Ask in chat
+              </Link>
+            </Button>
+            <Button
+              className="w-full"
+              onClick={clearSelectedDocuments}
+              type="button"
+              variant="outline"
+            >
+              <Trash2 className="h-4 w-4" />
+              Clear test documents
+            </Button>
+          </div>
+        ) : (
+          <Button className="mt-5 w-full" disabled type="button">
+            Upload a document to chat
+          </Button>
+        )}
       </aside>
     </div>
   );

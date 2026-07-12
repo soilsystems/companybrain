@@ -6,6 +6,7 @@ import ChatPage from "@/app/app/chat/page";
 import DocumentsPage from "@/app/app/documents/page";
 import AppHomePage from "@/app/app/page";
 import HomePage from "@/app/page";
+import { documentStorageKey } from "@/lib/document-store";
 
 describe("pages", () => {
   beforeEach(() => {
@@ -38,6 +39,33 @@ describe("pages", () => {
     ).toBeInTheDocument();
     expect(screen.getByLabelText("Upload for business")).toBeInTheDocument();
     expect(screen.getByText("Upload queue")).toBeInTheDocument();
+  });
+
+  it("links ready test documents to chat", async () => {
+    window.localStorage.setItem(
+      documentStorageKey,
+      JSON.stringify([
+        {
+          id: "doc-1",
+          businessId: "dubai-fruits-trading",
+          filename: "batch 1.pdf",
+          mimeType: "application/pdf",
+          size: "84 KB",
+          status: "Ready for Gemini",
+          uploadedAt: "2026-07-12T00:00:00.000Z",
+          data: "abc",
+        },
+      ]),
+    );
+
+    render(<DocumentsPage />);
+
+    expect(
+      await screen.findByRole("link", { name: /Ask in chat/ }),
+    ).toHaveAttribute("href", "/app/chat");
+    expect(
+      screen.getByRole("button", { name: "Clear test documents" }),
+    ).toBeInTheDocument();
   });
 
   it("renders the workspace foundation", () => {
