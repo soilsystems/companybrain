@@ -1,42 +1,40 @@
-import { MessageSquare, ShieldCheck, SquareDashedMousePointer } from "lucide-react";
+import {
+  MessageSquare,
+  ShieldCheck,
+  SquareDashedMousePointer,
+} from "lucide-react";
 
+import { BusinessChatWorkspace } from "@/components/business-chat-workspace";
 import { PageHeader } from "@/components/page-header";
 import { StatusGrid } from "@/components/status-grid";
 
 export default function ChatPage() {
   return (
     <section className="space-y-6">
-      <PageHeader eyebrow="Chat" title="Domain-scoped assistant" />
+      <PageHeader eyebrow="Chat" title="Business chat" />
       <StatusGrid
         items={[
           {
             label: "Scope resolver",
             value: "Required",
             detail: "Organization, business, domain",
-            icon: ShieldCheck
+            icon: ShieldCheck,
           },
           {
             label: "Tool access",
             value: "Predefined",
             detail: "No arbitrary SQL",
-            icon: SquareDashedMousePointer
+            icon: SquareDashedMousePointer,
           },
           {
             label: "Answer status",
             value: "Explicit",
             detail: "Answered, partial, not found",
-            icon: MessageSquare
-          }
+            icon: MessageSquare,
+          },
         ]}
       />
-      <div className="rounded-md border border-border bg-white p-5">
-        <div className="min-h-80 rounded-md border border-dashed border-slate-300 bg-slate-50 p-4">
-          <p className="text-sm font-medium text-slate-700">Assistant workspace</p>
-          <div className="mt-6 max-w-xl rounded-md bg-white p-4 text-sm text-slate-700 shadow-sm">
-            Select an enabled domain before asking a business question.
-          </div>
-        </div>
-      </div>
+      <BusinessChatWorkspace />
     </section>
   );
 }
