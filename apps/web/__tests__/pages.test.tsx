@@ -3,6 +3,7 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import ChatPage from "@/app/app/chat/page";
+import AppHomePage from "@/app/app/page";
 import HomePage from "@/app/page";
 
 describe("pages", () => {
@@ -14,6 +15,12 @@ describe("pages", () => {
 
   it("renders the chat placeholder", () => {
     render(<ChatPage />);
-    expect(screen.getByRole("heading", { name: "Chat" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Domain-scoped assistant" })).toBeInTheDocument();
+  });
+
+  it("renders the workspace foundation", () => {
+    render(<AppHomePage />);
+    expect(screen.getByRole("heading", { name: "Company Brain foundation" })).toBeInTheDocument();
+    expect(screen.getByText("Dubai Fruits Trading")).toBeInTheDocument();
   });
 });

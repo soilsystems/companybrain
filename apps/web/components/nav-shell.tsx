@@ -2,6 +2,9 @@ import Link from "next/link";
 import { Building2, FileText, MessageSquare, Settings } from "lucide-react";
 import type { ReactNode } from "react";
 
+import { ApiHealth } from "@/components/api-health";
+import { workspace } from "@/lib/foundation-data";
+
 const items = [
   { href: "/app", label: "Workspace", icon: Building2 },
   { href: "/app/chat", label: "Chat", icon: MessageSquare },
@@ -28,6 +31,13 @@ export function NavShell({ children }: { children: ReactNode }) {
             </Link>
           ))}
         </nav>
+        <div className="absolute bottom-4 left-4 right-4 space-y-3">
+          <ApiHealth />
+          <div className="rounded-md border border-border bg-slate-50 p-3 text-sm">
+            <p className="font-medium text-slate-950">{workspace.user}</p>
+            <p className="mt-1 text-muted-foreground">{workspace.role}</p>
+          </div>
+        </div>
       </aside>
       <main className="md:pl-64">
         <div className="mx-auto max-w-6xl px-5 py-6">{children}</div>
