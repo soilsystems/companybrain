@@ -30,7 +30,7 @@ export function ApiHealth() {
 
   return (
     <div className="rounded-md border border-border px-3 py-2 text-sm">
-      <span className="text-muted-foreground">API</span>{" "}
+      <span className="text-muted-foreground">Backend</span>{" "}
       <span className={state === "ok" ? "text-emerald-700" : "text-slate-700"}>
         {state === "not_configured" ? "not connected" : state}
       </span>
