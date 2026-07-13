@@ -16,9 +16,10 @@ Synthetic fixtures are generated in memory. Private business reports stay outsid
 | password-protected PDF | unlocked-copy message | yes |
 | TIFF conversion | linked checksums and valid PNG | yes |
 | Gemini JPEG | canonical image part | yes |
-| scanned vs text PDF | extraction-dependent OCR fallback | TODO(integration) |
-| XLS parser | preserve sheet/row context | TODO(integration) |
-| retry/fallback/final ready | durable attempts | TODO(integration) |
+| scanned PDF | empty native extraction triggers OCR | yes (fake OCR adapter) |
+| DOCX/XLSX parser | preserve table/sheet/row context | yes |
+| retry/fallback | three bounded retries then compatible fallback | yes |
+| final durable ready state | worker updates durable attempts | TODO(integration) |
 | business isolation | FastAPI authorization | TODO(integration) |
 | UI upload through completion | browser E2E | TODO(e2e) |
 

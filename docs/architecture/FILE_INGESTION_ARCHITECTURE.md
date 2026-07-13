@@ -23,10 +23,10 @@ flowchart LR
 | Format | Canonical MIME | Primary route | Fallback |
 |---|---|---|---|
 | PDF | `application/pdf` | native PDF parser | Document AI when no text |
-| JPEG/JPG | `image/jpeg` | normalize orientation/metadata | Document AI OCR |
-| PNG | `image/png` | normalize image | Document AI OCR |
-| WebP | `image/webp` | normalize image | Document AI OCR |
-| TIFF | `image/tiff` | convert to PNG | Document AI OCR |
+| JPEG/JPG | `image/jpeg` | normalize, then Document AI OCR | Gemini vision |
+| PNG | `image/png` | normalize, then Document AI OCR | Gemini vision |
+| WebP | `image/webp` | normalize, then Document AI OCR | Gemini vision |
+| TIFF | `image/tiff` | convert to PNG, then Document AI OCR | Gemini vision |
 | DOCX | Office Open XML Word MIME | native structured parser | clear failure |
 | XLSX | Office Open XML Excel MIME | workbook parser | clear failure |
 | XLS | `application/vnd.ms-excel` | legacy workbook parser | safe conversion when available |
