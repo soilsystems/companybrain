@@ -4,13 +4,15 @@ Date: 2026-07-13
 
 ## Confirmed failing path
 
-The deployed test slice stores files in browser `localStorage`; it does not yet use
-Supabase Storage or the FastAPI ingestion worker.
+The temporary test slice originally stored base64 files in browser `localStorage`.
+That caused page-level crashes when scanned files exceeded the small synchronous
+storage quota. It now uses IndexedDB and maps storage failures to an actionable upload
+message. It does not yet use Supabase Storage or the FastAPI ingestion worker.
 
 ```mermaid
 flowchart LR
   B[Browser file picker] --> F[File.type and extension checks]
-  F --> L[Browser localStorage]
+  F --> L[Browser IndexedDB temporary store]
   L --> C[Chat request with base64 bytes]
   C --> N[Next.js /api/chat]
   N --> G[Gemini Interactions API]
@@ -34,6 +36,14 @@ The same synthetic JPEG returned HTTP 200 when represented as:
 
 No private market report was committed or logged. The regression fixture is generated
 in memory and has the same relevant JPEG signature and MIME behavior.
+
+## Browser storage crash
+
+`saveStoredDocuments` previously called `localStorage.setItem` from a React state
+updater. A `QuotaExceededError` therefore escaped the component upload handler and
+rendered the global `Something went wrong` boundary. Document bytes now use IndexedDB;
+the legacy localStorage value is migrated automatically. A controlled error remains for
+browser storage denial or exhaustion.
 
 ## Existing full-code foundations before this change
 

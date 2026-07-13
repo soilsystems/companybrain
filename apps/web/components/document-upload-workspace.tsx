@@ -16,6 +16,7 @@ import { businesses } from "@/lib/foundation-data";
 import {
   getStoredDocuments,
   saveStoredDocuments,
+  DocumentStorageError,
   type StoredBusinessDocument,
 } from "@/lib/document-store";
 
@@ -77,7 +78,11 @@ export function DocumentUploadWorkspace() {
   );
 
   useEffect(() => {
-    setItems(getStoredDocuments());
+    void getStoredDocuments()
+      .then(setItems)
+      .catch(() =>
+        setError("We could not open saved documents. Please refresh and try again."),
+      );
   }, []);
 
   async function handleFiles(files: FileList | null) {
@@ -115,30 +120,36 @@ export function DocumentUploadWorkspace() {
         }),
       );
 
-      setItems((current) => {
-        const next = [...nextItems, ...current];
-        saveStoredDocuments(next);
-        return next;
-      });
-    } catch {
-      setError("Could not read one of the selected files.");
+      const next = [...nextItems, ...items];
+      await saveStoredDocuments(next);
+      setItems(next);
+    } catch (caught) {
+      setError(
+        caught instanceof DocumentStorageError
+          ? "This browser could not store the selected file. The file may be too large for temporary testing; please try a smaller copy or PDF."
+          : "Could not read one of the selected files.",
+      );
     }
   }
 
-  function removeDocument(documentId: string) {
-    setItems((current) => {
-      const next = current.filter((item) => item.id !== documentId);
-      saveStoredDocuments(next);
-      return next;
-    });
+  async function removeDocument(documentId: string) {
+    const next = items.filter((item) => item.id !== documentId);
+    try {
+      await saveStoredDocuments(next);
+      setItems(next);
+    } catch {
+      setError("We could not remove this document. Please refresh and try again.");
+    }
   }
 
-  function clearSelectedDocuments() {
-    setItems((current) => {
-      const next = current.filter((item) => item.businessId !== businessId);
-      saveStoredDocuments(next);
-      return next;
-    });
+  async function clearSelectedDocuments() {
+    const next = items.filter((item) => item.businessId !== businessId);
+    try {
+      await saveStoredDocuments(next);
+      setItems(next);
+    } catch {
+      setError("We could not clear these documents. Please refresh and try again.");
+    }
   }
 
   return (

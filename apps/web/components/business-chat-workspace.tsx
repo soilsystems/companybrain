@@ -69,8 +69,12 @@ export function BusinessChatWorkspace() {
   const [isSending, setIsSending] = useState(false);
 
   useEffect(() => {
-    function refreshDocuments() {
-      setDocuments(getStoredDocuments());
+    async function refreshDocuments() {
+      try {
+        setDocuments(await getStoredDocuments());
+      } catch {
+        setDocuments([]);
+      }
     }
 
     const requestedBusinessId =
@@ -121,7 +125,7 @@ export function BusinessChatWorkspace() {
       setBusinessId(first.businessId);
     }
 
-    refreshDocuments();
+    void refreshDocuments();
     window.addEventListener("storage", refreshDocuments);
     window.addEventListener("companybrain:documents-changed", refreshDocuments);
     return () => {
