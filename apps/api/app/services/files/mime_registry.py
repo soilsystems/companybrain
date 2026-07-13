@@ -19,6 +19,7 @@ class FileCategory(StrEnum):
 class Processor(StrEnum):
     image_normalizer = "image_normalizer"
     document_ai = "google_document_ai"
+    gemini_vision = "gemini_vision"
     pdf_parser = "pdf_parser"
     docx_parser = "docx_parser"
     spreadsheet_parser = "spreadsheet_parser"

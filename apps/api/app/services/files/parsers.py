@@ -5,6 +5,7 @@ import io
 import json
 from dataclasses import dataclass, field
 
+import xlrd
 from docx import Document
 from openpyxl import load_workbook
 from pptx import Presentation
@@ -82,6 +83,29 @@ def parse_xlsx(content: bytes) -> list[ExtractedSection]:
                     {"sheet": sheet.title, "row": row_number},
                 )
             )
+    return sections
+
+
+def parse_xls(content: bytes) -> list[ExtractedSection]:
+    workbook = xlrd.open_workbook(file_contents=content, on_demand=True)
+    sections: list[ExtractedSection] = []
+    for sheet in workbook.sheets():
+        if sheet.nrows == 0:
+            continue
+        headers = [str(sheet.cell_value(0, column)) for column in range(sheet.ncols)]
+        for row_number in range(1, sheet.nrows):
+            values = [
+                str(sheet.cell_value(row_number, column))
+                for column in range(sheet.ncols)
+            ]
+            text = " | ".join(
+                f"{headers[index] or index + 1}: {value}"
+                for index, value in enumerate(values)
+            )
+            sections.append(
+                ExtractedSection(text, {"sheet": sheet.name, "row": row_number + 1})
+            )
+    workbook.release_resources()
     return sections
 
 

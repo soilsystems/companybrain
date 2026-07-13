@@ -16,6 +16,7 @@ class RetryPolicy:
 class ProcessingPlan:
     normalized_mime_type: str
     processor: Processor
+    conversion_processor: Processor | None
     conversion_target: str | None
     ocr_required: bool
     fallback_processor: Processor | None
@@ -30,6 +31,7 @@ class FileProcessorRouter:
                 file.normalized_mime_type,
                 Processor.reject,
                 None,
+                None,
                 False,
                 None,
                 "reject",
@@ -40,10 +42,13 @@ class FileProcessorRouter:
             raise ValueError("Inspected safe file has no MIME definition")
 
         processor = definition.processor
+        conversion_processor = None
         strategy = processor.value
         fallback = file.fallback_processor
         if file.category == FileCategory.image:
-            processor = Processor.image_normalizer
+            conversion_processor = Processor.image_normalizer
+            processor = Processor.document_ai
+            fallback = Processor.gemini_vision
             strategy = "normalize_then_ocr"
         elif file.category == FileCategory.pdf:
             strategy = "native_pdf_then_ocr_when_no_text"
@@ -51,6 +56,7 @@ class FileProcessorRouter:
         return ProcessingPlan(
             normalized_mime_type=file.normalized_mime_type,
             processor=processor,
+            conversion_processor=conversion_processor,
             conversion_target=definition.conversion_target,
             ocr_required=definition.ocr_required,
             fallback_processor=fallback,

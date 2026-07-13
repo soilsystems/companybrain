@@ -123,9 +123,10 @@ def test_filename_is_safe_but_preserves_unicode_for_display() -> None:
 def test_scanned_image_routes_through_normalization_then_document_ai() -> None:
     inspected = FileInspector().inspect(image_bytes("JPEG"), "market.jpeg", "image/jpg")
     plan = asyncio.run(FileProcessorRouter().route(inspected))
-    assert plan.processor == Processor.image_normalizer
+    assert plan.conversion_processor == Processor.image_normalizer
+    assert plan.processor == Processor.document_ai
     assert plan.ocr_required is True
-    assert plan.fallback_processor == Processor.document_ai
+    assert plan.fallback_processor == Processor.gemini_vision
     assert plan.extraction_strategy == "normalize_then_ocr"
 
 
