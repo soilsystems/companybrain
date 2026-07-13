@@ -28,7 +28,8 @@ dev = [
   "mypy>=1.11.2",
   "pytest>=8.3.3",
   "pytest-asyncio>=0.24.0",
-  "ruff>=0.6.8"
+  "ruff>=0.6.8",
+  "types-openpyxl>=3.1.5.20250919"
 ]
 
 [tool.uv]
@@ -37,7 +38,8 @@ dev-dependencies = [
   "mypy>=1.11.2",
   "pytest>=8.3.3",
   "pytest-asyncio>=0.24.0",
-  "ruff>=0.6.8"
+  "ruff>=0.6.8",
+  "types-openpyxl>=3.1.5.20250919"
 ]
 
 [tool.ruff]

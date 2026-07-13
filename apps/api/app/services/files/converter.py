@@ -5,6 +5,7 @@ import io
 from dataclasses import dataclass
 
 from PIL import Image, ImageOps, UnidentifiedImageError
+from PIL import __version__ as pillow_version
 
 
 @dataclass(frozen=True)
@@ -44,6 +45,6 @@ class SafeImageConverter:
             content=converted,
             mime_type=target_mime,
             checksum_sha256=hashlib.sha256(converted).hexdigest(),
-            converter=f"Pillow/{Image.__version__}",
+            converter=f"Pillow/{pillow_version}",
             source_checksum_sha256=source_checksum,
         )
