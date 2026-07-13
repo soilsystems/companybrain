@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { buildGeminiInput, readGeminiText } from "@/lib/gemini";
+import {
+  buildGeminiInput,
+  prepareGeminiBinaryPart,
+  readGeminiText,
+} from "@/lib/gemini";
 
 describe("gemini helpers", () => {
   it("routes JPEG bytes as an image input instead of a document input", () => {
@@ -27,6 +31,22 @@ describe("gemini helpers", () => {
       data: "/9j/test-data",
       mime_type: "image/jpeg",
     });
+  });
+
+  it("detects JPEG bytes when the browser reports octet-stream", () => {
+    expect(
+      prepareGeminiBinaryPart("/9j/example", "application/octet-stream"),
+    ).toEqual({
+      type: "image",
+      data: "/9j/example",
+      mime_type: "image/jpeg",
+    });
+  });
+
+  it("does not send unsupported binary types to Gemini", () => {
+    expect(
+      prepareGeminiBinaryPart("AAECAw==", "application/vnd.ms-excel"),
+    ).toBeNull();
   });
 
   it("builds text document context for the selected business", () => {
