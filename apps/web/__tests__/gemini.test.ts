@@ -3,6 +3,32 @@ import { describe, expect, it } from "vitest";
 import { buildGeminiInput, readGeminiText } from "@/lib/gemini";
 
 describe("gemini helpers", () => {
+  it("routes JPEG bytes as an image input instead of a document input", () => {
+    const input = buildGeminiInput({
+      businessId: "dubai-fruits-trading",
+      question: "Extract the table",
+      history: [],
+      documents: [
+        {
+          id: "jpeg-regression",
+          businessId: "dubai-fruits-trading",
+          filename: "market report.jpeg",
+          mimeType: "image/jpeg",
+          size: "84 KB",
+          status: "Ready for Gemini",
+          uploadedAt: "2026-07-13T00:00:00.000Z",
+          data: "/9j/test-data",
+        },
+      ],
+    });
+
+    expect(input).toContainEqual({
+      type: "image",
+      data: "/9j/test-data",
+      mime_type: "image/jpeg",
+    });
+  });
+
   it("builds text document context for the selected business", () => {
     const input = buildGeminiInput({
       businessId: "dubai-fruits-trading",
