@@ -18,7 +18,7 @@ jobs:
           fi
       - name: Lightweight secret scan
         run: |
-          ! git grep -nE 'BEGIN (RSA|OPENSSH|PRIVATE) KEY|AKIA[0-9A-Z]{16}|sk-[A-Za-z0-9_-]{20,}|SUPABASE_SERVICE_ROLE_KEY=.+' -- ':!*.md'
+          ! git grep -nE 'BEGIN (RSA|OPENSSH|PRIVATE) KEY|AKIA[0-9A-Z]{16}|sk-[A-Za-z0-9_-]{20,}|SUPABASE_SERVICE_ROLE_KEY=.+' -- ':!*.md' ':!.github/workflows/repository.yml'
       - name: Markdown sanity
         run: |
           find . -name '*.md' -not -path './node_modules/*' -not -path './.git/*' -print | sort | wc -l
