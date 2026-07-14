@@ -24,6 +24,9 @@ class Settings(BaseSettings):
     supabase_service_role_key: str | None = None
     supabase_jwt_secret: str | None = None
     supabase_jwks_url: AnyHttpUrl | None = None
+    supabase_storage_bucket: str = "business-documents"
+    signed_url_expiry_seconds: int = 900
+    max_upload_mb: int = 50
     auth_audience: str = "authenticated"
     app_version: str = Field(default="0.1.0")
 

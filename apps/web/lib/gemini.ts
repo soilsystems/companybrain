@@ -7,12 +7,45 @@ type GeminiTextPart = {
 };
 
 type GeminiDocumentPart = {
-  type: "document";
+  type: "document" | "image";
   data: string;
   mime_type: string;
 };
 
 type GeminiInputPart = GeminiTextPart | GeminiDocumentPart;
+
+const geminiImageMimes = new Set(["image/jpeg", "image/png", "image/webp"]);
+
+const mimeAliases: Record<string, string> = {
+  "image/jpg": "image/jpeg",
+  "image/pjpeg": "image/jpeg",
+  "application/x-pdf": "application/pdf",
+};
+
+export function normalizeGeminiMime(value: string) {
+  const normalized = value.split(";", 1)[0].trim().toLowerCase();
+  return mimeAliases[normalized] ?? normalized;
+}
+
+function detectedInlineMime(data: string) {
+  const prefix = data.slice(0, 24);
+  if (prefix.startsWith("/9j/")) return "image/jpeg";
+  if (prefix.startsWith("iVBORw0KGgo")) return "image/png";
+  if (prefix.startsWith("UklGR")) return "image/webp";
+  if (prefix.startsWith("JVBERi0")) return "application/pdf";
+  return "";
+}
+
+export function prepareGeminiBinaryPart(data: string, claimedMime: string) {
+  const mimeType = detectedInlineMime(data) || normalizeGeminiMime(claimedMime);
+  if (geminiImageMimes.has(mimeType)) {
+    return { type: "image" as const, data, mime_type: mimeType };
+  }
+  if (mimeType === "application/pdf") {
+    return { type: "document" as const, data, mime_type: mimeType };
+  }
+  return null;
+}
 
 export type ChatHistoryItem = {
   role: "user" | "assistant";
@@ -79,11 +112,18 @@ export function buildGeminiInput({
     }
 
     if (document.data) {
-      parts.push({
-        type: "document",
-        data: document.data,
-        mime_type: document.mimeType || "application/pdf",
-      });
+      const binaryPart = prepareGeminiBinaryPart(
+        document.data,
+        document.mimeType,
+      );
+      if (binaryPart) {
+        parts.push(binaryPart);
+      } else {
+        parts.push({
+          type: "text",
+          text: `Document ${document.filename} needs a different processor and was not sent to Gemini.`,
+        });
+      }
     }
   }
 

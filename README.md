@@ -29,6 +29,18 @@ authorized structured data or authorized document evidence.
 
 See `docs/architecture/REPOSITORY_STRUCTURE.md` for details.
 
+## File ingestion
+
+The ingestion gateway detects file formats from content in FastAPI, records MIME
+mismatches, selects native parsing/OCR/conversion through a central router, and maps
+provider failures to safe user messages. Supported initial formats are PDF, JPEG/JPG,
+PNG, WebP, TIFF, DOCX, XLSX, XLS, CSV, TXT, JSON, and PPTX. Executables,
+macro-enabled files, encrypted files, corrupt files, and unknown formats are rejected
+clearly.
+
+See `docs/architecture/FILE_INGESTION_ARCHITECTURE.md` and
+`docs/testing/FILE_INGESTION_TEST_MATRIX.md` for routing, limits, and test coverage.
+
 ## Local Setup
 
 ```bash
@@ -61,10 +73,9 @@ API and worker can run either locally through `uv` or through Docker Compose.
 
 ## Current Phase
 
-Phase 1 foundation only. The repository establishes the runnable monorepo,
-tenant/business/domain schema, auth verification boundary, local development,
-and CI. It intentionally does not implement market intelligence, deals,
-document ingestion/RAG, embeddings, or chat orchestration.
+Phase 1 foundation plus the file inspection, routing, conversion, parser, provider
+capability, and ingestion persistence foundations. Durable extraction workers,
+retrieval, embeddings, and production chat orchestration remain under development.
 
 Primary references:
 
