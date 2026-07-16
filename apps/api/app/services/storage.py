@@ -53,12 +53,12 @@ class SupabaseStorage:
         token = str(payload.get("token") or "")
         if not signed_path:
             raise StorageError("invalid_signed_upload_response")
-        url = (
+        raw_url = (
             signed_path
             if signed_path.startswith("http")
             else f"{self.base_url}/storage/v1{signed_path}"
         )
-        return SignedUpload(url=url, token=token)
+        return SignedUpload(url=str(httpx.URL(raw_url)), token=token)
 
     async def download(self, bucket: str, object_path: str) -> bytes:
         encoded = quote(object_path, safe="/")

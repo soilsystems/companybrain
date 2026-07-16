@@ -33,7 +33,11 @@ async def test_storage_signed_upload_encodes_special_filename() -> None:
         assert "%20" in str(request.url)
         assert request.headers["authorization"] == "Bearer test-service-key"
         return httpx.Response(
-            200, json={"url": "/object/upload/sign/test", "token": "short-lived"}
+            200,
+            json={
+                "url": "/object/upload/sign/path/report name.jpeg?token=signed",
+                "token": "short-lived",
+            },
         )
 
     client = httpx.AsyncClient(transport=httpx.MockTransport(handler))
@@ -48,6 +52,7 @@ async def test_storage_signed_upload_encodes_special_filename() -> None:
     await client.aclose()
     assert signed.token == "short-lived"
     assert signed.url.startswith("https://example.supabase.co/storage/v1/")
+    assert "report%20name.jpeg" in signed.url
 
 
 async def test_upload_intent_requires_authentication() -> None:
