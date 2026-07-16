@@ -110,7 +110,7 @@ async def test_signed_download_is_short_lived_and_sets_filename() -> None:
     await client.aclose()
     assert signed.url == (
         "https://example.supabase.co/storage/v1/object/sign/path/"
-        "record%20name.pdf?token=x"
+        "record%20name.pdf?token=x&download=record.pdf"
     )
 
 

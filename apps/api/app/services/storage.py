@@ -116,4 +116,7 @@ class SupabaseStorage:
             raw_url = f"{self.base_url}{signed_path}"
         else:
             raw_url = f"{self.base_url}/storage/v1/{signed_path.lstrip('/')}"
-        return SignedObject(url=str(httpx.URL(raw_url)))
+        url = httpx.URL(raw_url)
+        if download_filename:
+            url = url.copy_add_param("download", download_filename)
+        return SignedObject(url=str(url))
