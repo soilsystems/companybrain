@@ -16,6 +16,7 @@ from app.integrations.openai.embeddings import (
     OpenAIEmbeddingClient,
 )
 from app.jobs.broker import broker
+from app.models import core as _core_models  # noqa: F401 - register FK targets
 from app.models.knowledge import (
     Document,
     DocumentChunk,
