@@ -208,7 +208,7 @@ export function DocumentLibrary() {
       {!loading && data && !data.results.length ? (
         <EmptyState
           title="No documents in this workspace"
-          description="Upload the first record with its survey number. Metadata becomes searchable immediately while processing continues."
+          description="Upload the first record. Its document name becomes searchable immediately while processing continues."
           action={
             <Link
               className="inline-flex items-center gap-2 rounded-base bg-foreground px-4 py-2.5 text-xs font-bold text-background"

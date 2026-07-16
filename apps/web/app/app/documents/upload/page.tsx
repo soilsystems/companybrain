@@ -9,7 +9,7 @@ export default function UploadDocumentsPage() {
           Add a searchable record
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Assign the survey number and metadata once. Processing is automatic.
+          Choose a file and confirm its document name. Processing is automatic.
         </p>
       </header>
       <UploadWorkspace />

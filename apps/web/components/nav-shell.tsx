@@ -168,7 +168,7 @@ export function NavShell({ children }: { children: ReactNode }) {
               aria-label="Global document search"
               className="h-9 w-52 rounded-base border bg-surface-muted pl-9 pr-3 text-xs outline-none transition-[width,background] focus:w-72 focus:bg-surface focus:ring-2 focus:ring-primary/20"
               onChange={(event) => setGlobalQuery(event.target.value)}
-              placeholder="Search survey or document..."
+              placeholder="Search document names..."
               value={globalQuery}
             />
           </form>
@@ -349,8 +349,7 @@ export function NavShell({ children }: { children: ReactNode }) {
           <div className="border-b p-5">
             <div className="label-caps mb-4">Search guidance</div>
             <p className="text-xs leading-5 text-muted-foreground">
-              Survey numbers preserve slashes, letters, spaces, and hyphens.
-              Exact authorized matches always appear first.
+              Search all or part of a document name in the active workspace.
             </p>
           </div>
           <div className="p-5">

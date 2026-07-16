@@ -160,7 +160,7 @@ export function DocumentDetailWorkspace({
       </section>
       <aside className="space-y-4">
         <div className="surface rounded-panel p-5">
-          <div className="label-caps mb-4">Document metadata</div>
+          <div className="label-caps mb-4">Document details</div>
           {survey ? <SurveyNumberBadge value={survey} /> : null}
           <dl className="mt-5 space-y-3 text-xs">
             {[
