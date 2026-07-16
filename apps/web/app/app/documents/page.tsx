@@ -1,36 +1,18 @@
-import { FileCheck2, FileText, LockKeyhole } from "lucide-react";
-
-import { DocumentUploadWorkspace } from "@/components/document-upload-workspace";
-import { PageHeader } from "@/components/page-header";
-import { StatusGrid } from "@/components/status-grid";
+import { DocumentLibrary } from "@/components/documents/document-library";
 
 export default function DocumentsPage() {
   return (
-    <section className="space-y-6">
-      <PageHeader eyebrow="Documents" title="Business knowledge intake" />
-      <StatusGrid
-        items={[
-          {
-            label: "Storage",
-            value: "Private",
-            detail: "Signed access only",
-            icon: LockKeyhole,
-          },
-          {
-            label: "Extraction",
-            value: "Queued",
-            detail: "Worker boundary",
-            icon: FileText,
-          },
-          {
-            label: "Publication",
-            value: "Reviewed",
-            detail: "Evidence before answers",
-            icon: FileCheck2,
-          },
-        ]}
-      />
-      <DocumentUploadWorkspace />
+    <section className="space-y-5">
+      <header>
+        <p className="label-caps text-primary">Document library</p>
+        <h1 className="mt-2 font-display text-2xl font-extrabold">
+          Business records
+        </h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          View, filter, download, and ask questions about authorized documents.
+        </p>
+      </header>
+      <DocumentLibrary />
     </section>
   );
 }
