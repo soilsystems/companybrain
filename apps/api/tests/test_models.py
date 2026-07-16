@@ -1,8 +1,18 @@
 from __future__ import annotations
 
+from typing import cast
+
+from sqlalchemy import Table
+
 from app.models.base import Base
 from app.models.core import Business, BusinessDomain
-from app.models.knowledge import DocumentFile, IngestionJob, IngestionStatus
+from app.models.knowledge import (
+    DocumentAccessEvent,
+    DocumentFile,
+    DocumentIdentifier,
+    IngestionJob,
+    IngestionStatus,
+)
 
 
 def constraint_names(table_name: str) -> set[str]:
@@ -47,3 +57,17 @@ def test_ingestion_state_model_covers_observable_pipeline() -> None:
 def test_derivatives_link_to_the_original_file() -> None:
     targets = {fk.target_fullname for fk in DocumentFile.__table__.foreign_keys}
     assert "knowledge.document_files.id" in targets
+
+
+def test_document_identifiers_are_typed_strings_with_scoped_indexes() -> None:
+    assert DocumentIdentifier.__table__.c.identifier_value.type.python_type is str
+    assert DocumentIdentifier.__table__.c.normalized_value.type.python_type is str
+    table = cast(Table, DocumentIdentifier.__table__)
+    indexes = {index.name for index in table.indexes}
+    assert "ix_document_identifiers_exact" in indexes
+    assert "ix_document_identifiers_normalized" in indexes
+
+
+def test_document_access_events_are_auditable() -> None:
+    assert DocumentAccessEvent.__table__.schema == "audit"
+    assert DocumentAccessEvent.__table__.c.event_type.nullable is False

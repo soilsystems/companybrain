@@ -11,6 +11,8 @@ One-page records of non-trivial, hard-to-reverse decisions. Copy [ADR-000-templa
 | [005](ADR-005-write-facts-then-recompute.md) | Publish = write facts → recompute (not atomic multi-table) | Accepted |
 | [006](ADR-006-availability-derived.md) | Availability derived from price, not a stored field | Accepted |
 | [007](ADR-007-scanned-image-ocr.md) | Scanned-image OCR is the primary risk; Phase 0 spike + fallback | Accepted |
+| [010](ADR-010-document-search-first.md) | Document search is the primary product workflow | Accepted |
+| [011](ADR-011-typed-document-identifiers.md) | Survey numbers are typed string identifiers | Accepted |
 | 008 | Build single-tenant, architect for multi-tenant | Superseded, archived under `docs/legacy/no-code/docs/decisions/` |
 | 009 | Official CLIs for provisioning/ops only, never business logic | Superseded, archived under `docs/legacy/no-code/docs/decisions/` |
 

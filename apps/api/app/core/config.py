@@ -27,6 +27,11 @@ class Settings(BaseSettings):
     supabase_storage_bucket: str = "business-documents"
     signed_url_expiry_seconds: int = 900
     max_upload_mb: int = 50
+    openai_api_key: str | None = None
+    embedding_model: str = "text-embedding-3-large"
+    embedding_dimensions: int = 1024
+    gemini_api_key: str | None = None
+    gemini_model: str = "gemini-2.5-flash"
     auth_audience: str = "authenticated"
     app_version: str = Field(default="0.1.0")
 

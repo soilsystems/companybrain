@@ -4,8 +4,11 @@ import uuid
 from datetime import datetime
 from enum import StrEnum
 
+from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
     BigInteger,
+    Boolean,
+    Date,
     Enum,
     ForeignKey,
     Index,
@@ -69,6 +72,15 @@ class Document(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         UUID(as_uuid=True), ForeignKey("core.users.id", ondelete="RESTRICT")
     )
     display_name: Mapped[str] = mapped_column(Text, nullable=False)
+    title: Mapped[str] = mapped_column(Text, nullable=False)
+    description: Mapped[str | None] = mapped_column(Text)
+    category: Mapped[str | None] = mapped_column(Text)
+    document_type: Mapped[str | None] = mapped_column(Text)
+    document_date: Mapped[datetime | None] = mapped_column(Date)
+    party_owner: Mapped[str | None] = mapped_column(Text)
+    location: Mapped[str | None] = mapped_column(Text)
+    tags: Mapped[list[str]] = mapped_column(JSONB, default=list, nullable=False)
+    deleted_at: Mapped[datetime | None]
     status: Mapped[IngestionStatus] = mapped_column(
         ingestion_status_enum, default=IngestionStatus.uploaded, nullable=False
     )
@@ -188,3 +200,116 @@ class IngestionAttempt(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     retryable: Mapped[bool] = mapped_column(default=False, nullable=False)
     started_at: Mapped[datetime | None]
     finished_at: Mapped[datetime | None]
+
+
+class DocumentIdentifier(UUIDPrimaryKeyMixin, TimestampMixin, Base):
+    __tablename__ = "document_identifiers"
+    __table_args__ = (
+        UniqueConstraint(
+            "organization_id",
+            "business_id",
+            "document_id",
+            "identifier_type",
+            "identifier_value",
+            name="uq_document_identifier_original",
+        ),
+        Index(
+            "ix_document_identifiers_exact",
+            "organization_id",
+            "business_id",
+            "identifier_type",
+            "identifier_value",
+        ),
+        Index(
+            "ix_document_identifiers_normalized",
+            "organization_id",
+            "business_id",
+            "identifier_type",
+            "normalized_value",
+        ),
+        {"schema": "knowledge"},
+    )
+
+    organization_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), nullable=False
+    )
+    business_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
+    document_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("knowledge.documents.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    identifier_type: Mapped[str] = mapped_column(Text, nullable=False)
+    identifier_value: Mapped[str] = mapped_column(Text, nullable=False)
+    normalized_value: Mapped[str] = mapped_column(Text, nullable=False)
+    normalization_version: Mapped[int] = mapped_column(Integer, nullable=False)
+    is_primary: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
+
+class DocumentChunk(UUIDPrimaryKeyMixin, TimestampMixin, Base):
+    __tablename__ = "document_chunks"
+    __table_args__ = (
+        UniqueConstraint(
+            "document_version_id", "chunk_index", name="uq_document_chunk_index"
+        ),
+        Index("ix_document_chunks_scope", "organization_id", "business_id"),
+        Index("ix_document_chunks_document", "document_id", "document_version_id"),
+        {"schema": "knowledge"},
+    )
+
+    organization_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), nullable=False
+    )
+    business_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
+    document_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("knowledge.documents.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    document_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("knowledge.document_versions.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    chunk_index: Mapped[int] = mapped_column(Integer, nullable=False)
+    text: Mapped[str] = mapped_column(Text, nullable=False)
+    page_start: Mapped[int | None] = mapped_column(Integer)
+    page_end: Mapped[int | None] = mapped_column(Integer)
+    section_label: Mapped[str | None] = mapped_column(Text)
+    embedding: Mapped[list[float] | None] = mapped_column(Vector(1024))
+    embedding_model: Mapped[str | None] = mapped_column(Text)
+    content_hash: Mapped[str] = mapped_column(Text, nullable=False)
+
+
+class DocumentAccessEvent(UUIDPrimaryKeyMixin, TimestampMixin, Base):
+    __tablename__ = "document_access_events"
+    __table_args__ = (
+        Index(
+            "ix_document_access_events_scope",
+            "organization_id",
+            "business_id",
+            "document_id",
+        ),
+        {"schema": "audit"},
+    )
+
+    organization_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), nullable=False
+    )
+    business_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
+    document_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("knowledge.documents.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    document_file_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("knowledge.document_files.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("core.users.id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    event_type: Mapped[str] = mapped_column(Text, nullable=False)
