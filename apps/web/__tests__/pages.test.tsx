@@ -43,7 +43,7 @@ describe("document-search-first pages", () => {
       screen.getByRole("heading", { name: "Find an authorized record" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByLabelText("Search survey numbers and documents"),
+      screen.getByLabelText("Search document names"),
     ).toHaveValue("289/2");
   });
 
@@ -53,7 +53,7 @@ describe("document-search-first pages", () => {
       screen.getByRole("heading", { name: "Business Workspace Overview" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByLabelText("Search survey numbers and documents"),
+      screen.getByLabelText("Search document names"),
     ).toBeInTheDocument();
   });
 });

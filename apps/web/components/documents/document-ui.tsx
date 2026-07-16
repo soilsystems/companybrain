@@ -125,13 +125,13 @@ export function SurveySearchBar({
         )}
       />
       <input
-        aria-label="Search survey numbers and documents"
+        aria-label="Search document names"
         className={cn(
           "min-w-0 flex-1 bg-transparent px-1 outline-none placeholder:text-muted-foreground",
           compact ? "h-9 text-sm" : "h-12 text-[15px]",
         )}
         onChange={(event) => onChange(event.target.value)}
-        placeholder="Search survey 289/2, title, owner, location, or document content"
+        placeholder="Search by document name"
         value={value}
       />
       <button

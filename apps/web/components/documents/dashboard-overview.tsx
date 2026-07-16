@@ -86,8 +86,7 @@ export function DashboardOverview() {
             Business Workspace Overview
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Search survey numbers, titles, metadata, or indexed document
-            content.
+            Search uploaded records by document name.
           </p>
         </div>
         <div className="mt-6">
@@ -99,7 +98,7 @@ export function DashboardOverview() {
         </div>
         <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-muted-foreground">
           <span>Try:</span>
-          {["289/2", "104/A", "ownership", "mutation record"].map((item) => (
+          {["report", "invoice", "agreement", "market"].map((item) => (
             <button
               className="rounded-lg border px-2 py-1 hover:border-primary hover:text-primary"
               key={item}
@@ -185,7 +184,7 @@ export function DashboardOverview() {
               <span>
                 <strong className="block text-xs">Quick upload</strong>
                 <span className="text-xs text-muted-foreground">
-                  Add searchable metadata
+                  Upload a searchable document
                 </span>
               </span>
             </Link>

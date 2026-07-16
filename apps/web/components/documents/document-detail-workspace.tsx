@@ -60,6 +60,12 @@ export function DocumentDetailWorkspace({
     if (autoDownload && document) void openAction("download");
   }, [autoDownload, document, openAction]);
 
+  useEffect(() => {
+    if (document && !autoDownload && document.normalized_mime_type) {
+      void openAction("view");
+    }
+  }, [autoDownload, document, openAction]);
+
   if (loading)
     return (
       <div className="surface rounded-panel">
@@ -136,11 +142,10 @@ export function DocumentDetailWorkspace({
             <div className="max-w-md text-center">
               <FileQuestion className="mx-auto h-10 w-10 text-muted-foreground" />
               <h2 className="mt-4 font-display text-base font-bold">
-                Secure preview ready on request
+                Secure preview is loading
               </h2>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                Preview URLs are short-lived and created only after
-                authorization. The original storage path is never exposed.
+                The document will appear here after access is authorized.
               </p>
               <button
                 className="mt-5 rounded-base bg-foreground px-4 py-2.5 text-xs font-bold text-background hover:bg-primary hover:text-white"

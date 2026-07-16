@@ -35,14 +35,15 @@ The SQL query is membership-scoped before results are ranked:
 | PostgreSQL full text | 400 |
 | pgvector semantic similarity | 200 + similarity |
 
-`updated_at` is only a tie-breaker. Semantic lookup is optional: missing credentials
-or an embedding outage does not affect exact, normalized, metadata, or full-text
-search. Results are paginated and capped at 100.
+`updated_at` is only a tie-breaker. The current product search surface uses identifier
+and document-name matching only; content and semantic retrieval remain isolated for a
+later iteration. Results are paginated and capped at 100.
 
 ## Upload and indexing
 
-The upload-intent transaction creates the document metadata, original file record,
-version, job, and primary survey identifier before the file is processed. The browser
+The upload-intent transaction creates the document name, original file record, and
+version before the file is processed. A survey identifier is created only when one is
+supplied. The browser
 uploads directly to a signed private-storage URL and confirms completion. FastAPI then
 queues an idempotent Dramatiq actor. The worker downloads the original, uses the
 ingestion router, stores validated derivatives separately, extracts text, creates

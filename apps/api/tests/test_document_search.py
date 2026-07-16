@@ -75,12 +75,26 @@ def test_upload_schema_preserves_original_survey_number() -> None:
     assert NORMALIZATION_VERSION == 1
 
 
+def test_upload_schema_allows_name_only_documents() -> None:
+    payload = UploadIntentRequest(
+        business_id=uuid.uuid4(),
+        domain_id=uuid.uuid4(),
+        filename="Quarterly Report.pdf",
+        size_bytes=100,
+        title="Quarterly Report",
+    )
+    assert payload.survey_number is None
+
+
 async def test_signed_download_is_short_lived_and_sets_filename() -> None:
     async def handler(request: httpx.Request) -> httpx.Response:
         assert request.url.path.endswith("/private/path/record.pdf")
         assert request.headers["authorization"] == "Bearer service-key"
         assert request.content
-        return httpx.Response(200, json={"signedURL": "/storage/v1/object/sign/token"})
+        return httpx.Response(
+            200,
+            json={"signedURL": "/storage/v1/object/sign/path/record name.pdf?token=x"},
+        )
 
     client = httpx.AsyncClient(transport=httpx.MockTransport(handler))
     storage = SupabaseStorage(
@@ -94,7 +108,10 @@ async def test_signed_download_is_short_lived_and_sets_filename() -> None:
         "private", "path/record.pdf", 300, download_filename="record.pdf"
     )
     await client.aclose()
-    assert signed.url == "https://example.supabase.co/storage/v1/object/sign/token"
+    assert signed.url == (
+        "https://example.supabase.co/storage/v1/object/sign/path/"
+        "record%20name.pdf?token=x"
+    )
 
 
 @pytest.mark.parametrize(

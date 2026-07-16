@@ -43,10 +43,10 @@ See `docs/architecture/FILE_INGESTION_ARCHITECTURE.md` and
 
 ## Document search and records UI
 
-The application opens on a document-search-first dashboard. Users can preserve and
-search survey numbers such as `289/2` or `104/A`, upload records to private storage,
+The application opens on a document-search-first dashboard. Users can search records
+by document name, upload records to private storage,
 inspect processing state, request short-lived view/download URLs, and ask questions
-grounded in one authorized document. Exact identifier and metadata search remain
+grounded in one authorized document. Document-name search remains
 available even when extraction or embeddings are unavailable.
 
 Routes: `/app`, `/app/search`, `/app/documents`, `/app/documents/upload`,

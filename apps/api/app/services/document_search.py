@@ -63,6 +63,7 @@ async def search_documents(
     page: int,
     page_size: int,
     query_embedding: list[float] | None = None,
+    search_content: bool = True,
 ) -> tuple[int, list[RankedDocument]]:
     normalized = normalize_identifier(query)
     identifier_scope = and_(
@@ -95,20 +96,17 @@ async def search_documents(
     metadata_partial = or_(
         Document.title.ilike(f"%{query}%"),
         Document.display_name.ilike(f"%{query}%"),
-        Document.description.ilike(f"%{query}%"),
-        Document.category.ilike(f"%{query}%"),
-        Document.document_type.ilike(f"%{query}%"),
-        Document.party_owner.ilike(f"%{query}%"),
-        Document.location.ilike(f"%{query}%"),
     )
     fts_query = func.websearch_to_tsquery("simple", query)
-    full_text = exists().where(
-        DocumentChunk.document_id == Document.id,
-        func.to_tsvector("simple", DocumentChunk.text).op("@@")(fts_query),
-    )
+    full_text: ColumnElement[bool] = literal(False)
+    if search_content:
+        full_text = exists().where(
+            DocumentChunk.document_id == Document.id,
+            func.to_tsvector("simple", DocumentChunk.text).op("@@")(fts_query),
+        )
     semantic_score: ColumnElement[Any] = literal(0.0)
     semantic_match: ColumnElement[bool] = literal(False)
-    if query_embedding:
+    if search_content and query_embedding:
         semantic_score = (
             select(
                 func.max(1 - DocumentChunk.embedding.cosine_distance(query_embedding))

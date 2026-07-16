@@ -30,6 +30,7 @@ export function UploadWorkspace() {
     error: scopeError,
   } = useScope();
   const [file, setFile] = useState<File | null>(null);
+  const [documentName, setDocumentName] = useState("");
   const [progress, setProgress] = useState(0);
   const [state, setState] = useState<
     "idle" | "uploading" | "processing" | "error"
@@ -42,7 +43,6 @@ export function UploadWorkspace() {
       setError("Choose an authorized workspace, domain, and file.");
       return;
     }
-    const form = new FormData(event.currentTarget);
     setError("");
     setState("uploading");
     setProgress(12);
@@ -57,18 +57,8 @@ export function UploadWorkspace() {
             filename: file.name,
             browser_mime_type: file.type || "application/octet-stream",
             size_bytes: file.size,
-            survey_number: String(form.get("surveyNumber") || ""),
-            title: String(form.get("title") || "") || file.name,
-            category: String(form.get("category") || "") || null,
-            document_type: String(form.get("documentType") || "") || null,
-            description: String(form.get("description") || "") || null,
-            document_date: String(form.get("documentDate") || "") || null,
-            party_owner: String(form.get("partyOwner") || "") || null,
-            location: String(form.get("location") || "") || null,
-            tags: String(form.get("tags") || "")
-              .split(",")
-              .map((tag) => tag.trim())
-              .filter(Boolean),
+            survey_number: null,
+            title: documentName.trim() || file.name,
           }),
         },
       );
@@ -106,6 +96,7 @@ export function UploadWorkspace() {
   function acceptFiles(files: FileList | null) {
     if (files?.[0]) {
       setFile(files[0]);
+      setDocumentName(files[0].name);
       setError("");
     }
   }
@@ -167,78 +158,14 @@ export function UploadWorkspace() {
               ))}
             </select>
           </label>
-          <label className="text-xs font-bold">
-            Survey number
-            <input
-              className={`${inputClass} mt-2`}
-              name="surveyNumber"
-              placeholder="289/2"
-              required
-            />
-          </label>
           <label className="text-xs font-bold sm:col-span-2">
-            Document title
+            Document name
             <input
               className={`${inputClass} mt-2`}
-              name="title"
-              placeholder="Land ownership record"
+              onChange={(event) => setDocumentName(event.target.value)}
+              placeholder="Document name"
               required
-            />
-          </label>
-          <label className="text-xs font-bold">
-            Category
-            <input
-              className={`${inputClass} mt-2`}
-              name="category"
-              placeholder="Land records"
-            />
-          </label>
-          <label className="text-xs font-bold">
-            Document type
-            <input
-              className={`${inputClass} mt-2`}
-              name="documentType"
-              placeholder="Survey extract"
-            />
-          </label>
-          <label className="text-xs font-bold">
-            Document date
-            <input
-              className={`${inputClass} mt-2`}
-              name="documentDate"
-              type="date"
-            />
-          </label>
-          <label className="text-xs font-bold">
-            Party or owner
-            <input
-              className={`${inputClass} mt-2`}
-              name="partyOwner"
-              placeholder="Owner name"
-            />
-          </label>
-          <label className="text-xs font-bold">
-            Location
-            <input
-              className={`${inputClass} mt-2`}
-              name="location"
-              placeholder="Village, district"
-            />
-          </label>
-          <label className="text-xs font-bold">
-            Tags
-            <input
-              className={`${inputClass} mt-2`}
-              name="tags"
-              placeholder="ownership, title"
-            />
-          </label>
-          <label className="text-xs font-bold sm:col-span-2">
-            Description
-            <textarea
-              className="mt-2 min-h-24 w-full resize-y rounded-base border bg-surface p-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
-              name="description"
-              placeholder="Optional notes about this record"
+              value={documentName}
             />
           </label>
         </div>
@@ -276,7 +203,10 @@ export function UploadWorkspace() {
               </div>
               <button
                 aria-label="Remove selected file"
-                onClick={() => setFile(null)}
+                onClick={() => {
+                  setFile(null);
+                  setDocumentName("");
+                }}
                 type="button"
               >
                 <X className="h-4 w-4" />
@@ -304,8 +234,8 @@ export function UploadWorkspace() {
             </div>
             {state === "processing" ? (
               <p className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
-                <CheckCircle2 className="h-4 w-4 text-success" /> Metadata is
-                searchable while extraction continues.
+                <CheckCircle2 className="h-4 w-4 text-success" /> The document
+                name is searchable while processing continues.
               </p>
             ) : null}
           </div>

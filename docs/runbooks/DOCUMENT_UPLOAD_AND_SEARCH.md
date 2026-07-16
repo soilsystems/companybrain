@@ -19,9 +19,9 @@ still requires deployment wiring.
 
 1. Sign in and select an authorized organization, business, and domain.
 2. Open `/app/documents/upload`.
-3. Choose a safe supported file and enter survey number `289/2` plus a title.
-4. Submit. Confirm that metadata appears before extraction finishes.
-5. Search `289 / 2`; verify the original `289/2` displays first.
+3. Choose a safe supported file. The filename pre-fills the editable document name.
+4. Submit. Confirm that the document name appears before extraction finishes.
+5. Search all or part of the document name and verify it appears first.
 6. Open the detail route and request a preview. Confirm the URL expires and contains no
    service-role key or raw storage path in application data.
 7. Request download and verify an `audit.document_access_events` row.

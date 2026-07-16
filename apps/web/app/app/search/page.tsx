@@ -13,7 +13,7 @@ export default function SearchPage({
           Find an authorized record
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Search exact survey numbers first, then metadata and indexed content.
+          Search uploaded records by document name or original file name.
         </p>
       </header>
       <SearchWorkspace initialQuery={searchParams.q ?? ""} />

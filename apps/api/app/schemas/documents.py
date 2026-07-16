@@ -12,7 +12,7 @@ class UploadIntentRequest(BaseModel):
     filename: str = Field(min_length=1, max_length=512)
     browser_mime_type: str | None = Field(default=None, max_length=200)
     size_bytes: int = Field(gt=0)
-    survey_number: str = Field(min_length=1, max_length=200)
+    survey_number: str | None = Field(default=None, min_length=1, max_length=200)
     title: str | None = Field(default=None, max_length=500)
     category: str | None = Field(default=None, max_length=200)
     document_type: str | None = Field(default=None, max_length=200)

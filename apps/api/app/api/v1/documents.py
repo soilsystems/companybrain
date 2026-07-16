@@ -9,10 +9,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import Settings, get_settings
 from app.db.session import get_db_session
-from app.integrations.openai.embeddings import (
-    EmbeddingUnavailable,
-    OpenAIEmbeddingClient,
-)
 from app.jobs.document_ingestion import ingest_document
 from app.models.base import RecordStatus
 from app.models.core import Membership, User
@@ -86,16 +82,20 @@ async def create_upload_intent(
         location=payload.location,
         tags=payload.tags,
     )
-    identifier = DocumentIdentifier(
-        id=uuid.uuid4(),
-        organization_id=scope.organization_id,
-        business_id=scope.business_id,
-        document_id=document.id,
-        identifier_type="survey_number",
-        identifier_value=payload.survey_number,
-        normalized_value=normalize_identifier(payload.survey_number),
-        normalization_version=NORMALIZATION_VERSION,
-        is_primary=True,
+    identifier = (
+        DocumentIdentifier(
+            id=uuid.uuid4(),
+            organization_id=scope.organization_id,
+            business_id=scope.business_id,
+            document_id=document.id,
+            identifier_type="survey_number",
+            identifier_value=payload.survey_number,
+            normalized_value=normalize_identifier(payload.survey_number),
+            normalization_version=NORMALIZATION_VERSION,
+            is_primary=True,
+        )
+        if payload.survey_number
+        else None
     )
     version = DocumentVersion(
         id=uuid.uuid4(),
@@ -118,7 +118,9 @@ async def create_upload_intent(
         browser_mime_type=payload.browser_mime_type,
         size_bytes=payload.size_bytes,
     )
-    session.add_all([document, identifier, version])
+    session.add_all(
+        [document, version] + ([identifier] if identifier is not None else [])
+    )
     # Persist the version before its original file. DocumentFile has a self-reference,
     # so SQLAlchemy cannot always infer this insert order from raw foreign-key IDs.
     await session.flush()
@@ -321,14 +323,7 @@ async def search(
     page_size: int = Query(default=20, ge=1, le=100),
     current_user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_db_session),
-    settings: Settings = Depends(get_settings),
 ) -> DocumentSearchResponse:
-    query_embedding = None
-    try:
-        query_embedding = await OpenAIEmbeddingClient(settings).embed_query(q)
-    except EmbeddingUnavailable:
-        # Exact, metadata, and full-text search remain available independently.
-        query_embedding = None
     total, ranked = await search_documents(
         session,
         current_user,
@@ -340,7 +335,8 @@ async def search(
         document_type=document_type,
         page=page,
         page_size=page_size,
-        query_embedding=query_embedding,
+        query_embedding=None,
+        search_content=False,
     )
     results: list[DocumentSearchResult] = []
     for item in ranked:
