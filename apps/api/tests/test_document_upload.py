@@ -1,14 +1,19 @@
 from __future__ import annotations
 
 import uuid
+from types import SimpleNamespace
+from unittest.mock import AsyncMock, MagicMock
 
 import httpx
+import pytest
 from httpx import ASGITransport, AsyncClient
 
+from app.api.v1 import documents as documents_api
 from app.core.config import Settings
 from app.main import app
+from app.schemas.documents import UploadIntentRequest
 from app.services.document_ingestion import AuthorizedScope, build_storage_path
-from app.services.storage import SupabaseStorage
+from app.services.storage import SignedUpload, SupabaseStorage
 
 
 def test_storage_path_is_scoped_and_ignores_path_traversal() -> None:
@@ -60,3 +65,43 @@ async def test_upload_intent_requires_authentication() -> None:
             },
         )
     assert response.status_code == 401
+
+
+async def test_upload_intent_flushes_version_before_file(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    scope = AuthorizedScope(uuid.uuid4(), uuid.uuid4(), uuid.uuid4())
+    events: list[str] = []
+    session = MagicMock()
+    session.add_all.side_effect = lambda _: events.append("parents")
+    session.flush = AsyncMock(side_effect=lambda: events.append("flush"))
+    session.add.side_effect = lambda _: events.append("file")
+    session.commit = AsyncMock(side_effect=lambda: events.append("commit"))
+    monkeypatch.setattr(
+        documents_api,
+        "authorize_document_scope",
+        AsyncMock(return_value=scope),
+    )
+    storage = MagicMock()
+    storage.create_signed_upload = AsyncMock(
+        return_value=SignedUpload("https://storage.example/upload", "token")
+    )
+    monkeypatch.setattr(documents_api, "SupabaseStorage", lambda _: storage)
+
+    await documents_api.create_upload_intent(
+        UploadIntentRequest(
+            business_id=scope.business_id,
+            domain_id=scope.domain_id,
+            filename="report.txt",
+            size_bytes=20,
+            survey_number="289/2",
+        ),
+        current_user=SimpleNamespace(id=uuid.uuid4()),  # type: ignore[arg-type]
+        session=session,
+        settings=Settings(
+            supabase_url="https://example.supabase.co",
+            supabase_service_role_key="service-key",
+        ),
+    )
+
+    assert events == ["parents", "flush", "file", "commit"]

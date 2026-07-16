@@ -118,7 +118,11 @@ async def create_upload_intent(
         browser_mime_type=payload.browser_mime_type,
         size_bytes=payload.size_bytes,
     )
-    session.add_all([document, identifier, version, file])
+    session.add_all([document, identifier, version])
+    # Persist the version before its original file. DocumentFile has a self-reference,
+    # so SQLAlchemy cannot always infer this insert order from raw foreign-key IDs.
+    await session.flush()
+    session.add(file)
     try:
         signed = await SupabaseStorage(settings).create_signed_upload(
             settings.supabase_storage_bucket, object_path
