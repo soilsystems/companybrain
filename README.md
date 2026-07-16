@@ -41,6 +41,19 @@ clearly.
 See `docs/architecture/FILE_INGESTION_ARCHITECTURE.md` and
 `docs/testing/FILE_INGESTION_TEST_MATRIX.md` for routing, limits, and test coverage.
 
+## Document search and records UI
+
+The application opens on a document-search-first dashboard. Users can preserve and
+search survey numbers such as `289/2` or `104/A`, upload records to private storage,
+inspect processing state, request short-lived view/download URLs, and ask questions
+grounded in one authorized document. Exact identifier and metadata search remain
+available even when extraction or embeddings are unavailable.
+
+Routes: `/app`, `/app/search`, `/app/documents`, `/app/documents/upload`,
+`/app/documents/[documentId]`, `/app/chat`, and `/app/settings`.
+
+See `docs/runbooks/DOCUMENT_UPLOAD_AND_SEARCH.md` for setup and manual verification.
+
 ## Local Setup
 
 ```bash
@@ -54,7 +67,9 @@ make web
 ```
 
 The Next.js app runs locally through pnpm (`make web`) rather than Docker. The
-API and worker can run either locally through `uv` or through Docker Compose.
+API and worker can run either locally through `uv` or through Docker Compose. Set
+`NEXT_PUBLIC_DEFAULT_BUSINESS_ID` and `NEXT_PUBLIC_DEFAULT_DOMAIN_ID` only when a
+specific authorized scope should be selected by default.
 
 ## Commands
 
@@ -73,9 +88,10 @@ API and worker can run either locally through `uv` or through Docker Compose.
 
 ## Current Phase
 
-Phase 1 foundation plus the file inspection, routing, conversion, parser, provider
-capability, and ingestion persistence foundations. Durable extraction workers,
-retrieval, embeddings, and production chat orchestration remain under development.
+Phase 1 foundation plus file ingestion, typed document identifiers, hybrid document
+search, secure document actions, a reference-based records UI, and asynchronous
+extraction/chunking/embedding. Production provider credentials and a migrated
+Supabase environment are required for live OCR and semantic retrieval.
 
 Primary references:
 

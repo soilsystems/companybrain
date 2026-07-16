@@ -22,6 +22,11 @@ Initial use cases include:
 
 Company Brain is not a general-purpose chatbot. It is an evidence-grounded business assistant.
 
+The primary product workflow is document search and records management. Chat is a
+secondary, evidence-grounded interface over the same authorized document retrieval
+services. Exact typed identifiers, including survey numbers, resolve before full-text
+or semantic retrieval.
+
 ---
 
 ## 2. Core Product Principle
@@ -141,6 +146,25 @@ flowchart TD
     ANSWER --> API
     API --> WEB
 ```
+
+### Document search path
+
+```mermaid
+flowchart LR
+    WEB[Next.js search and library] --> API[FastAPI]
+    API --> AUTH[Membership scope]
+    AUTH --> IDENT[Typed identifier lookup]
+    AUTH --> META[Metadata and full-text lookup]
+    AUTH --> VECTOR[Optional pgvector lookup]
+    API --> SIGN[Authorized signed URL service]
+    SIGN --> PRIVATE[Private Supabase Storage]
+    API --> AUDIT[Document access audit]
+```
+
+Survey identifiers are stored as original strings plus a versioned conservative
+normalization. Metadata is searchable as soon as upload intent is committed; OCR,
+chunking, and embeddings continue asynchronously and cannot hide an exact identifier
+match. See `docs/architecture/DOCUMENT_SEARCH_ARCHITECTURE.md`.
 
 ---
 
