@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1.auth import router as auth_router
 from app.api.v1.chat import router as chat_router
@@ -23,6 +24,13 @@ def create_app() -> FastAPI:
         redoc_url=None,
     )
     app.middleware("http")(request_id_middleware)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[settings.frontend_url.rstrip("/")],
+        allow_credentials=True,
+        allow_methods=["GET", "POST", "OPTIONS"],
+        allow_headers=["Authorization", "Content-Type", "X-Request-ID"],
+    )
     register_exception_handlers(app)
     app.include_router(health_router)
     app.include_router(auth_router)

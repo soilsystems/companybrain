@@ -59,14 +59,20 @@ def identity_columns() -> list[sa.Column]:
 
 def upgrade() -> None:
     op.execute("CREATE SCHEMA IF NOT EXISTS knowledge")
-    status = sa.Enum(*STATUSES, name="ingestion_status", schema="knowledge")
-    kind = sa.Enum(
+    status = postgresql.ENUM(
+        *STATUSES,
+        name="ingestion_status",
+        schema="knowledge",
+        create_type=False,
+    )
+    kind = postgresql.ENUM(
         "original",
         "derivative",
         "extraction",
         "preview",
         name="document_file_kind",
         schema="knowledge",
+        create_type=False,
     )
     status.create(op.get_bind(), checkfirst=True)
     kind.create(op.get_bind(), checkfirst=True)
@@ -256,6 +262,9 @@ def downgrade() -> None:
     ):
         op.drop_table(table, schema="knowledge")
     sa.Enum(name="document_file_kind", schema="knowledge").drop(
+        op.get_bind(), checkfirst=True
+    )
+    sa.Enum(name="ingestion_status", schema="knowledge").drop(
         op.get_bind(), checkfirst=True
     )
     sa.Enum(name="ingestion_status", schema="knowledge").drop(
