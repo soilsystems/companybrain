@@ -14,6 +14,11 @@ class SignedUpload:
     token: str
 
 
+@dataclass(frozen=True)
+class SignedObject:
+    url: str
+
+
 class StorageError(RuntimeError):
     pass
 
@@ -66,3 +71,48 @@ class SupabaseStorage:
         if response.status_code >= 400:
             raise StorageError("storage_download_failed")
         return response.content
+
+    async def upload(
+        self, bucket: str, object_path: str, content: bytes, mime_type: str
+    ) -> None:
+        encoded = quote(object_path, safe="/")
+        response = await self.client.post(
+            f"{self.base_url}/storage/v1/object/{bucket}/{encoded}",
+            headers={**self.headers, "content-type": mime_type, "x-upsert": "false"},
+            content=content,
+        )
+        if response.status_code >= 400:
+            raise StorageError("storage_upload_failed")
+
+    async def create_signed_object_url(
+        self,
+        bucket: str,
+        object_path: str,
+        expires_in: int,
+        *,
+        download_filename: str | None = None,
+    ) -> SignedObject:
+        encoded = quote(object_path, safe="/")
+        payload: dict[str, object] = {"expiresIn": expires_in}
+        if download_filename:
+            payload["download"] = download_filename
+        response = await self.client.post(
+            f"{self.base_url}/storage/v1/object/sign/{bucket}/{encoded}",
+            headers=self.headers,
+            json=payload,
+        )
+        if response.status_code == 404:
+            raise StorageError("object_not_found")
+        if response.status_code >= 400:
+            raise StorageError("signed_object_failed")
+        signed_path = str(
+            response.json().get("signedURL") or response.json().get("signedUrl") or ""
+        )
+        if not signed_path:
+            raise StorageError("invalid_signed_object_response")
+        url = (
+            signed_path
+            if signed_path.startswith("http")
+            else f"{self.base_url}{signed_path}"
+        )
+        return SignedObject(url=url)

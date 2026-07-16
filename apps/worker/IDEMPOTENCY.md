@@ -12,3 +12,8 @@ attempt. Examples:
 Workers will upsert job-attempt records and domain outputs inside transactions.
 Retries may repeat reads or external calls, but database writes must converge to
 the same final state.
+
+The document ingestion actor is implemented with the trusted ingestion services under
+`apps/api/app/jobs/document_ingestion.py` and executed by the dedicated worker image.
+This keeps file inspection, provider routing, and persistence behavior identical in
+the API and worker processes while preserving separate deployment boundaries.

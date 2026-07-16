@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from uuid import UUID
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -25,7 +26,7 @@ async def me(
     session: AsyncSession = Depends(get_db_session),
 ) -> MeResponse:
     rows = (await session.execute(me_query(current_user.id))).all()
-    organizations: dict[str, dict[str, object]] = {}
+    organizations: dict[str, tuple[UUID, str, str]] = {}
     business_domains: dict[str, list[DomainSummary]] = defaultdict(list)
     businesses: dict[str, BusinessSummary] = {}
 
@@ -33,11 +34,11 @@ async def me(
         org_id = str(membership.organization_id)
         organizations.setdefault(
             org_id,
-            {
-                "id": membership.organization_id,
-                "name": business.organization.name,
-                "slug": business.organization.slug,
-            },
+            (
+                membership.organization_id,
+                business.organization.name,
+                business.organization.slug,
+            ),
         )
         business_key = str(business.id)
         business_domains[business_key].append(
@@ -58,17 +59,17 @@ async def me(
         )
 
     org_payloads: list[OrganizationSummary] = []
-    for org in organizations.values():
+    for organization_id, organization_name, organization_slug in organizations.values():
         org_businesses = [
             business.model_copy(update={"domains": business_domains[str(business.id)]})
             for business in businesses.values()
-            if business.organization_id == org["id"]
+            if business.organization_id == organization_id
         ]
         org_payloads.append(
             OrganizationSummary(
-                id=org["id"],
-                name=org["name"],
-                slug=org["slug"],
+                id=organization_id,
+                name=organization_name,
+                slug=organization_slug,
                 businesses=org_businesses,
             )
         )

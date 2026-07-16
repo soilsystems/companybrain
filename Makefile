@@ -19,7 +19,7 @@ web:
 	pnpm --filter @companybrain/web dev
 
 worker:
-	cd apps/worker && uv run dramatiq app.broker
+	cd apps/api && uv run dramatiq app.jobs.document_ingestion
 
 migrate:
 	cd apps/api && uv run alembic upgrade head
