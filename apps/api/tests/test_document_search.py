@@ -93,7 +93,7 @@ async def test_signed_download_is_short_lived_and_sets_filename() -> None:
         assert request.content
         return httpx.Response(
             200,
-            json={"signedURL": "/storage/v1/object/sign/path/record name.pdf?token=x"},
+            json={"signedURL": "/object/sign/path/record name.pdf?token=x"},
         )
 
     client = httpx.AsyncClient(transport=httpx.MockTransport(handler))

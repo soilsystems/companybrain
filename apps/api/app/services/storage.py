@@ -110,9 +110,10 @@ class SupabaseStorage:
         )
         if not signed_path:
             raise StorageError("invalid_signed_object_response")
-        raw_url = (
-            signed_path
-            if signed_path.startswith("http")
-            else f"{self.base_url}{signed_path}"
-        )
+        if signed_path.startswith("http"):
+            raw_url = signed_path
+        elif signed_path.startswith("/storage/v1/"):
+            raw_url = f"{self.base_url}{signed_path}"
+        else:
+            raw_url = f"{self.base_url}/storage/v1/{signed_path.lstrip('/')}"
         return SignedObject(url=str(httpx.URL(raw_url)))
