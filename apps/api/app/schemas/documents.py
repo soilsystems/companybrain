@@ -58,6 +58,10 @@ class DocumentIdentifierResponse(BaseModel):
 
 class DocumentSearchResult(BaseModel):
     document_id: uuid.UUID
+    organization_id: uuid.UUID
+    organization_name: str
+    business_id: uuid.UUID
+    business_name: str
     title: str
     survey_number: str | None
     alternate_identifiers: list[DocumentIdentifierResponse]
@@ -76,6 +80,7 @@ class DocumentSearchResult(BaseModel):
     processing_status: str
     can_view: bool
     can_download: bool
+    can_delete: bool
     updated_at: datetime
 
 
@@ -89,6 +94,10 @@ class DocumentSearchResponse(BaseModel):
 
 class DocumentDetailResponse(BaseModel):
     document_id: uuid.UUID
+    organization_id: uuid.UUID
+    organization_name: str
+    business_id: uuid.UUID
+    business_name: str
     title: str
     display_name: str
     description: str | None
@@ -106,6 +115,7 @@ class DocumentDetailResponse(BaseModel):
     version_number: int
     can_view: bool
     can_download: bool
+    can_delete: bool
     created_at: datetime
     updated_at: datetime
 
@@ -113,3 +123,9 @@ class DocumentDetailResponse(BaseModel):
 class SignedDocumentUrlResponse(BaseModel):
     url: str
     expires_in_seconds: int
+
+
+class DeleteDocumentResponse(BaseModel):
+    document_id: uuid.UUID
+    deleted: bool
+    message: str

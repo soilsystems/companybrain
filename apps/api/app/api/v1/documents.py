@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import uuid
+from datetime import UTC, datetime
 
 import structlog
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -11,7 +12,7 @@ from app.core.config import Settings, get_settings
 from app.db.session import get_db_session
 from app.jobs.document_ingestion import ingest_document
 from app.models.base import RecordStatus
-from app.models.core import Membership, User
+from app.models.core import Business, Membership, MembershipRole, Organization, User
 from app.models.knowledge import (
     Document,
     DocumentAccessEvent,
@@ -20,9 +21,11 @@ from app.models.knowledge import (
     DocumentVersion,
     FileKind,
     IngestionJob,
+    IngestionStatus,
 )
 from app.schemas.documents import (
     ConfirmUploadRequest,
+    DeleteDocumentResponse,
     DocumentDetailResponse,
     DocumentIdentifierResponse,
     DocumentSearchResponse,
@@ -217,6 +220,33 @@ async def document_identifiers(
     ]
 
 
+async def document_scope_details(
+    session: AsyncSession, user: User, document: Document
+) -> tuple[str, str, bool]:
+    row = (
+        await session.execute(
+            select(Organization.name, Business.name, Membership.role)
+            .join(Business, Business.organization_id == Organization.id)
+            .join(
+                Membership,
+                (Membership.organization_id == Organization.id)
+                & (Membership.business_id == Business.id),
+            )
+            .where(
+                Organization.id == document.organization_id,
+                Business.id == document.business_id,
+                Membership.user_id == user.id,
+                Membership.status == RecordStatus.active,
+            )
+        )
+    ).one()
+    role = row[2]
+    can_delete = role in {MembershipRole.owner, MembershipRole.admin} or (
+        document.created_by_user_id == user.id
+    )
+    return str(row[0]), str(row[1]), can_delete
+
+
 @router.get("", response_model=DocumentSearchResponse)
 async def list_documents(
     business_id: uuid.UUID = Query(),
@@ -262,6 +292,9 @@ async def list_documents(
     )
     results: list[DocumentSearchResult] = []
     for document in rows.scalars():
+        organization_name, business_name, can_delete = await document_scope_details(
+            session, current_user, document
+        )
         identifiers = await document_identifiers(session, document.id)
         file_result = await session.execute(
             select(DocumentFile)
@@ -283,6 +316,10 @@ async def list_documents(
         results.append(
             DocumentSearchResult(
                 document_id=document.id,
+                organization_id=document.organization_id,
+                organization_name=organization_name,
+                business_id=document.business_id,
+                business_name=business_name,
                 title=document.title,
                 survey_number=survey,
                 alternate_identifiers=[
@@ -303,6 +340,7 @@ async def list_documents(
                 processing_status=document.status.value,
                 can_view=True,
                 can_download=True,
+                can_delete=can_delete,
                 updated_at=document.updated_at,
             )
         )
@@ -314,7 +352,8 @@ async def list_documents(
 @router.get("/search", response_model=DocumentSearchResponse)
 async def search(
     q: str = Query(min_length=1, max_length=500),
-    business_id: uuid.UUID = Query(),
+    organization_id: uuid.UUID = Query(),
+    business_id: uuid.UUID | None = Query(default=None),
     domain_id: uuid.UUID | None = Query(default=None),
     category: str | None = Query(default=None, max_length=200),
     document_type: str | None = Query(default=None, max_length=200),
@@ -328,6 +367,7 @@ async def search(
         session,
         current_user,
         query=q,
+        organization_id=organization_id,
         business_id=business_id,
         domain_id=domain_id,
         status=processing_status,
@@ -340,6 +380,9 @@ async def search(
     )
     results: list[DocumentSearchResult] = []
     for item in ranked:
+        organization_name, business_name, can_delete = await document_scope_details(
+            session, current_user, item.document
+        )
         identifiers = await document_identifiers(session, item.document.id)
         file_result = await session.execute(
             select(DocumentFile)
@@ -361,6 +404,10 @@ async def search(
         results.append(
             DocumentSearchResult(
                 document_id=item.document.id,
+                organization_id=item.document.organization_id,
+                organization_name=organization_name,
+                business_id=item.document.business_id,
+                business_name=business_name,
                 title=item.document.title,
                 survey_number=survey,
                 alternate_identifiers=[
@@ -381,6 +428,7 @@ async def search(
                 processing_status=item.document.status.value,
                 can_view=True,
                 can_download=True,
+                can_delete=can_delete,
                 updated_at=item.document.updated_at,
             )
         )
@@ -399,8 +447,15 @@ async def document_detail(
         session, current_user, document_id
     )
     identifiers = await document_identifiers(session, document.id)
+    organization_name, business_name, can_delete = await document_scope_details(
+        session, current_user, document
+    )
     return DocumentDetailResponse(
         document_id=document.id,
+        organization_id=document.organization_id,
+        organization_name=organization_name,
+        business_id=document.business_id,
+        business_name=business_name,
         title=document.title,
         display_name=document.display_name,
         description=document.description,
@@ -418,6 +473,7 @@ async def document_detail(
         version_number=version.version_number,
         can_view=True,
         can_download=True,
+        can_delete=can_delete,
         created_at=document.created_at,
         updated_at=document.updated_at,
     )
@@ -511,6 +567,55 @@ async def create_download_url(
     )
 
 
+@router.delete("/{document_id}", response_model=DeleteDocumentResponse)
+async def delete_document(
+    document_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db_session),
+) -> DeleteDocumentResponse:
+    document, version, original, job = await authorized_document_bundle(
+        session, current_user, document_id
+    )
+    _organization_name, _business_name, can_delete = await document_scope_details(
+        session, current_user, document
+    )
+    if not can_delete:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to delete this document.",
+        )
+
+    now = datetime.now(UTC)
+    document.deleted_at = now
+    if job and job.status not in {
+        IngestionStatus.ready,
+        IngestionStatus.failed,
+        IngestionStatus.rejected,
+        IngestionStatus.cancelled,
+    }:
+        job.status = IngestionStatus.cancelled
+        job.cancelled_at = now
+        job.finished_at = now
+        version.status = IngestionStatus.cancelled
+        version.processing_finished_at = now
+    session.add(
+        DocumentAccessEvent(
+            organization_id=document.organization_id,
+            business_id=document.business_id,
+            document_id=document.id,
+            document_file_id=original.id,
+            user_id=current_user.id,
+            event_type="delete",
+        )
+    )
+    await session.commit()
+    return DeleteDocumentResponse(
+        document_id=document.id,
+        deleted=True,
+        message="Document moved to trash.",
+    )
+
+
 @router.post("/confirm", response_model=DocumentStatusResponse, status_code=202)
 async def confirm_upload(
     payload: ConfirmUploadRequest,
@@ -574,6 +679,7 @@ async def document_status(
         .where(
             Document.id == document_id,
             Document.created_by_user_id == current_user.id,
+            Document.deleted_at.is_(None),
             DocumentFile.kind == FileKind.original,
         )
     )

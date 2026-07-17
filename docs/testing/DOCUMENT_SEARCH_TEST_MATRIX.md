@@ -12,6 +12,11 @@
 | schema | identifier/chunk/audit migration declarations | migration tests | Pass |
 | performance | exact lookup among 10,000 synthetic rows | deterministic benchmark | Pass |
 | frontend | dashboard/search/library/upload/chat render | Vitest | Pass |
+| hierarchy | SoilSystems sub-organization names remain stable | Pytest | Pass |
+| universal search | organization scope and optional business filter | API and live verification | Pass |
+| result location | organization and sub-organization shown | TypeScript and live verification | Pass |
+| deletion | authentication and confirmation flow | Pytest and Vitest | Pass |
+| deletion safety | soft-delete exclusion and worker cancellation recheck | API and live verification | Pass |
 | responsive UI | desktop/tablet/mobile visual capture | browser comparison | Pass |
 | live database | migration and cross-tenant SQL execution | requires PostgreSQL | Not run locally |
 | live storage | private upload and signed URL expiry | requires Supabase | Not run locally |

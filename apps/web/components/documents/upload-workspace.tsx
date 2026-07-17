@@ -40,7 +40,7 @@ export function UploadWorkspace() {
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!file || !business || !domainId) {
-      setError("Choose an authorized workspace, domain, and file.");
+      setError("Choose an authorized sub-organization, domain, and file.");
       return;
     }
     setError("");
@@ -129,13 +129,13 @@ export function UploadWorkspace() {
             </select>
           </label>
           <label className="text-xs font-bold">
-            Business workspace
+            Sub-organization
             <select
               className={`${inputClass} mt-2`}
               onChange={(event) => setBusinessId(event.target.value)}
               value={business?.id ?? ""}
             >
-              <option value="">Select business</option>
+              <option value="">Select sub-organization</option>
               {organization?.businesses.map((item) => (
                 <option key={item.id} value={item.id}>
                   {item.name}

@@ -1,8 +1,8 @@
 # Company Brain
 
 Company Brain is a multi-tenant, multi-business, multi-domain business
-intelligence and knowledge platform. Users choose an organization, business
-workspace, and domain, then ask questions that must be answered only from
+intelligence and knowledge platform. Users choose an organization, sub-organization,
+and domain, then ask questions that must be answered only from
 authorized structured data or authorized document evidence.
 
 ## Approved Stack
@@ -51,6 +51,12 @@ available even when extraction or embeddings are unavailable.
 
 Routes: `/app`, `/app/search`, `/app/documents`, `/app/documents/upload`,
 `/app/documents/[documentId]`, `/app/chat`, and `/app/settings`.
+
+The SoilSystems deployment contains `Woods & Spices`, `Windflower`, `Peppywoods`,
+`Tallsilver`, and `LaCavana (Resort)` as sub-organizations. Uploads are stored under
+the selected sub-organization. Search spans every authorized sub-organization by
+default and shows each document's location. Authorized owners, admins, and uploaders
+can move mistaken uploads to trash; private originals are retained for recovery.
 
 See `docs/runbooks/DOCUMENT_UPLOAD_AND_SEARCH.md` for setup and manual verification.
 

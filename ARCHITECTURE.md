@@ -198,10 +198,16 @@ A business, subsidiary, department, or operating unit.
 Examples:
 
 ```text
-Dubai Fruits Trading
-Real Estate Division
-Logistics Business
+Woods & Spices
+Windflower
+Peppywoods
+Tallsilver
+LaCavana (Resort)
 ```
+
+The frontend labels this level **Sub-organization** for SoilSystems users. The
+database and API retain the established `business` naming so tenant authorization,
+storage paths, and existing document ownership remain stable.
 
 ### 5.3 Domain
 

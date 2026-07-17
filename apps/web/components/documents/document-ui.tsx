@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
 import {
   ArrowRight,
   Download,
@@ -6,10 +9,11 @@ import {
   FileText,
   MessageSquare,
   Search,
+  Trash2,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import type { DocumentSearchResult } from "@/lib/api-client";
+import { deleteDocument, type DocumentSearchResult } from "@/lib/api-client";
 
 export function ProcessingBadge({ status }: { status: string }) {
   const ready = status === "ready";
@@ -144,7 +148,111 @@ export function SurveySearchBar({
   );
 }
 
-export function DocumentCard({ document }: { document: DocumentSearchResult }) {
+export function DeleteDocumentButton({
+  documentId,
+  documentTitle,
+  onDeleted,
+  iconOnly = false,
+}: {
+  documentId: string;
+  documentTitle: string;
+  onDeleted: () => void;
+  iconOnly?: boolean;
+}) {
+  const [confirming, setConfirming] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState("");
+
+  async function remove() {
+    setDeleting(true);
+    setError("");
+    try {
+      await deleteDocument(documentId);
+      setConfirming(false);
+      onDeleted();
+    } catch (caught) {
+      setError(
+        caught instanceof Error
+          ? caught.message
+          : "The document could not be deleted.",
+      );
+    } finally {
+      setDeleting(false);
+    }
+  }
+
+  return (
+    <>
+      <button
+        aria-label={`Delete ${documentTitle}`}
+        className={
+          iconOnly
+            ? "rounded-lg p-2 text-muted-foreground hover:bg-destructive-muted hover:text-destructive"
+            : "inline-flex h-9 items-center gap-2 rounded-base border px-3 text-xs font-bold text-muted-foreground hover:border-destructive/40 hover:bg-destructive-muted hover:text-destructive"
+        }
+        onClick={() => setConfirming(true)}
+        type="button"
+      >
+        <Trash2 className="h-4 w-4" /> {iconOnly ? null : "Delete"}
+      </button>
+      {confirming ? (
+        <div
+          aria-labelledby={`delete-title-${documentId}`}
+          aria-modal="true"
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-black/55 p-4"
+          role="dialog"
+        >
+          <div className="surface w-full max-w-md rounded-panel p-5 shadow-panel">
+            <div className="flex h-10 w-10 items-center justify-center rounded-base bg-destructive-muted text-destructive">
+              <Trash2 className="h-5 w-5" />
+            </div>
+            <h2
+              className="mt-4 font-display text-lg font-bold"
+              id={`delete-title-${documentId}`}
+            >
+              Move document to trash?
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              “{documentTitle}” will disappear from search and the document
+              library. Its private original is retained for recovery.
+            </p>
+            {error ? (
+              <p className="mt-3 rounded-base bg-destructive-muted p-3 text-xs text-destructive">
+                {error}
+              </p>
+            ) : null}
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                className="h-10 rounded-base border px-4 text-xs font-bold"
+                disabled={deleting}
+                onClick={() => setConfirming(false)}
+                type="button"
+              >
+                Cancel
+              </button>
+              <button
+                className="h-10 rounded-base bg-destructive px-4 text-xs font-bold text-white disabled:opacity-50"
+                disabled={deleting}
+                onClick={remove}
+                type="button"
+              >
+                {deleting ? "Deleting..." : "Move to trash"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </>
+  );
+}
+
+export function DocumentCard({
+  document,
+  onDeleted,
+}: {
+  document: DocumentSearchResult;
+  onDeleted?: (documentId: string) => void;
+}) {
   return (
     <article className="surface rounded-panel p-5 transition-[border-color,box-shadow] hover:border-primary/40 hover:shadow-panel">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -162,6 +270,9 @@ export function DocumentCard({ document }: { document: DocumentSearchResult }) {
           </h2>
           <p className="mt-1 text-xs text-muted-foreground">
             {document.original_filename ?? "Original file"}
+          </p>
+          <p className="mt-2 text-xs font-semibold text-primary">
+            {document.organization_name} / {document.business_name}
           </p>
         </div>
         <ProcessingBadge status={document.processing_status} />
@@ -205,11 +316,20 @@ export function DocumentCard({ document }: { document: DocumentSearchResult }) {
           <MessageSquare className="h-4 w-4" /> Ask
         </Link>
         <Link
-          className="ml-auto inline-flex h-9 items-center gap-2 rounded-base border px-3 text-xs font-bold hover:bg-surface-muted"
+          className="inline-flex h-9 items-center gap-2 rounded-base border px-3 text-xs font-bold hover:bg-surface-muted"
           href={`/app/documents/${document.document_id}?download=true`}
         >
           <Download className="h-4 w-4" /> Download
         </Link>
+        {document.can_delete && onDeleted ? (
+          <div className="ml-auto">
+            <DeleteDocumentButton
+              documentId={document.document_id}
+              documentTitle={document.title}
+              onDeleted={() => onDeleted(document.document_id)}
+            />
+          </div>
+        ) : null}
       </div>
     </article>
   );

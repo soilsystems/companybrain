@@ -8,6 +8,7 @@ import {
   EmptyState,
   ErrorState,
   LoadingSkeleton,
+  DeleteDocumentButton,
   ProcessingBadge,
   SurveyNumberBadge,
 } from "@/components/documents/document-ui";
@@ -130,11 +131,12 @@ export function DocumentLibrary() {
       ) : null}
       {!loading && data?.results.length ? (
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[860px] text-left text-xs">
+          <table className="w-full min-w-[980px] text-left text-xs">
             <thead className="border-b bg-surface-muted text-muted-foreground">
               <tr>
                 <th className="px-5 py-3 font-bold">Survey</th>
                 <th className="px-4 py-3 font-bold">Document</th>
+                <th className="px-4 py-3 font-bold">Sub-organization</th>
                 <th className="px-4 py-3 font-bold">Category</th>
                 <th className="px-4 py-3 font-bold">Updated</th>
                 <th className="px-4 py-3 font-bold">Status</th>
@@ -163,6 +165,14 @@ export function DocumentLibrary() {
                     </Link>
                     <p className="mt-1 max-w-xs truncate text-muted-foreground">
                       {document.original_filename}
+                    </p>
+                  </td>
+                  <td className="px-4 py-4">
+                    <span className="font-semibold">
+                      {document.business_name}
+                    </span>
+                    <p className="mt-1 text-muted-foreground">
+                      {document.organization_name}
                     </p>
                   </td>
                   <td className="px-4 py-4 text-muted-foreground">
@@ -197,6 +207,14 @@ export function DocumentLibrary() {
                       >
                         <Download className="h-4 w-4" />
                       </Link>
+                      {document.can_delete ? (
+                        <DeleteDocumentButton
+                          documentId={document.document_id}
+                          documentTitle={document.title}
+                          iconOnly
+                          onDeleted={load}
+                        />
+                      ) : null}
                     </div>
                   </td>
                 </tr>

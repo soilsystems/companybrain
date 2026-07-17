@@ -43,7 +43,10 @@ async def process_document_job(job_id: uuid.UUID) -> None:
     settings = get_settings()
     async with AsyncSessionLocal() as session:
         job = await session.get(IngestionJob, job_id)
-        if job is None or job.status == IngestionStatus.ready:
+        if job is None or job.status in {
+            IngestionStatus.ready,
+            IngestionStatus.cancelled,
+        }:
             return
         version = await session.get(DocumentVersion, job.document_version_id)
         if version is None:
@@ -56,7 +59,7 @@ async def process_document_job(job_id: uuid.UUID) -> None:
             )
         )
         original = original_result.scalar_one_or_none()
-        if document is None or original is None:
+        if document is None or original is None or document.deleted_at is not None:
             return
 
         now = datetime.now(UTC)
@@ -77,6 +80,20 @@ async def process_document_job(job_id: uuid.UUID) -> None:
             result = await FileProcessingPipeline(ocr_processors).process(
                 content, original.original_filename, original.browser_mime_type
             )
+
+            await session.refresh(document)
+            await session.refresh(job)
+            if (
+                document.deleted_at is not None
+                or job.status == IngestionStatus.cancelled
+            ):
+                cancelled = datetime.now(UTC)
+                job.status = version.status = IngestionStatus.cancelled
+                job.cancelled_at = job.cancelled_at or cancelled
+                job.finished_at = job.finished_at or cancelled
+                version.processing_finished_at = cancelled
+                await session.commit()
+                return
 
             if result.derivative:
                 derivative_path = (

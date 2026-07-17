@@ -55,7 +55,8 @@ async def search_documents(
     user: User,
     *,
     query: str,
-    business_id: uuid.UUID,
+    organization_id: uuid.UUID,
+    business_id: uuid.UUID | None,
     domain_id: uuid.UUID | None,
     status: str | None,
     category: str | None,
@@ -148,7 +149,7 @@ async def search_documents(
         Membership.status == RecordStatus.active,
         Membership.organization_id == Document.organization_id,
         Membership.business_id == Document.business_id,
-        Document.business_id == business_id,
+        Document.organization_id == organization_id,
         Document.deleted_at.is_(None),
         or_(
             exact_original,
@@ -161,6 +162,8 @@ async def search_documents(
             semantic_match,
         ),
     ]
+    if business_id:
+        filters.append(Document.business_id == business_id)
     if domain_id:
         filters.append(Document.domain_id == domain_id)
     if status:

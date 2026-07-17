@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import uuid
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db_session
-from app.models.core import User
+from app.models.core import Business, User
 from app.models.knowledge import DocumentChunk
 from app.schemas.chat import (
     ChatCitation,
@@ -58,10 +58,16 @@ async def document_question(
 ) -> DocumentChatResponse:
     parsed = parse_survey_query(payload.question)
     search_query = parsed.original if parsed else payload.question
+    organization_id = await session.scalar(
+        select(Business.organization_id).where(Business.id == payload.business_id)
+    )
+    if organization_id is None:
+        raise HTTPException(status_code=404, detail="Sub-organization not found.")
     _total, matches = await search_documents(
         session,
         current_user,
         query=search_query,
+        organization_id=organization_id,
         business_id=payload.business_id,
         domain_id=payload.domain_id,
         status=None,

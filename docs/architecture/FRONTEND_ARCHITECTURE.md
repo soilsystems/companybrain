@@ -22,8 +22,9 @@ state.
 
 ## Composition and state
 
-`ScopeProvider` loads `/api/v1/auth/me` and exposes only organizations, businesses,
-domains, role, and user data returned by FastAPI. `NavShell` supplies the 64px top
+`ScopeProvider` loads `/api/v1/auth/me` and exposes only organizations, businesses
+(presented as sub-organizations), domains, role, and user data returned by FastAPI.
+`NavShell` supplies the 64px top
 bar, 260px navigation rail, responsive main area, and 280px context rail. Drawers
 replace side rails on narrow screens. Theme state supports light, dark, and system.
 
@@ -41,3 +42,8 @@ provider route is retired with HTTP 410.
 The current token is held in browser local storage. A production follow-up should
 move auth to the supported Supabase client session flow with secure server-readable
 cookies to reduce XSS exposure and support middleware redirects.
+
+Upload requires an explicit organization and sub-organization selection. Search uses
+the active organization as its boundary, offers an optional sub-organization filter,
+and renders both location labels on every result. `DeleteDocumentButton` provides an
+accessible confirmation dialog and refreshes the calling view after a soft delete.

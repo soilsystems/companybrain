@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
   Download,
   ExternalLink,
@@ -12,6 +13,7 @@ import {
 import { useCallback, useEffect, useState } from "react";
 
 import {
+  DeleteDocumentButton,
   ErrorState,
   LoadingSkeleton,
   ProcessingBadge,
@@ -30,6 +32,7 @@ export function DocumentDetailWorkspace({
   documentId: string;
   autoDownload?: boolean;
 }) {
+  const router = useRouter();
   const [document, setDocument] = useState<DocumentDetail | null>(null);
   const [viewUrl, setViewUrl] = useState("");
   const [loading, setLoading] = useState(true);
@@ -42,19 +45,22 @@ export function DocumentDetailWorkspace({
       .finally(() => setLoading(false));
   }, [documentId]);
 
-  const openAction = useCallback(async (action: "view" | "download") => {
-    try {
-      const signed = await createDocumentUrl(documentId, action);
-      if (action === "view") setViewUrl(signed.url);
-      else window.location.assign(signed.url);
-    } catch (caught) {
-      setError(
-        caught instanceof Error
-          ? caught.message
-          : "The document file is unavailable.",
-      );
-    }
-  }, [documentId]);
+  const openAction = useCallback(
+    async (action: "view" | "download") => {
+      try {
+        const signed = await createDocumentUrl(documentId, action);
+        if (action === "view") setViewUrl(signed.url);
+        else window.location.assign(signed.url);
+      } catch (caught) {
+        setError(
+          caught instanceof Error
+            ? caught.message
+            : "The document file is unavailable.",
+        );
+      }
+    },
+    [documentId],
+  );
 
   useEffect(() => {
     if (autoDownload && document) void openAction("download");
@@ -164,6 +170,8 @@ export function DocumentDetailWorkspace({
           {survey ? <SurveyNumberBadge value={survey} /> : null}
           <dl className="mt-5 space-y-3 text-xs">
             {[
+              ["Organization", document.organization_name],
+              ["Sub-organization", document.business_name],
               ["Category", document.category],
               ["Type", document.document_type],
               ["Owner", document.party_owner],
@@ -197,6 +205,13 @@ export function DocumentDetailWorkspace({
         >
           <MessageSquare className="h-4 w-4" /> Ask this document
         </Link>
+        {document.can_delete ? (
+          <DeleteDocumentButton
+            documentId={document.document_id}
+            documentTitle={document.title}
+            onDeleted={() => router.replace("/app/documents")}
+          />
+        ) : null}
         {error ? (
           <p className="rounded-base border border-destructive/30 bg-destructive-muted p-3 text-xs text-destructive">
             {error}

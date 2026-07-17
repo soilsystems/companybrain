@@ -39,6 +39,10 @@ export type DocumentIdentifier = {
 
 export type DocumentSearchResult = {
   document_id: string;
+  organization_id: string;
+  organization_name: string;
+  business_id: string;
+  business_name: string;
   title: string;
   survey_number: string | null;
   alternate_identifiers: DocumentIdentifier[];
@@ -57,6 +61,7 @@ export type DocumentSearchResult = {
   processing_status: string;
   can_view: boolean;
   can_download: boolean;
+  can_delete: boolean;
   updated_at: string;
 };
 
@@ -70,6 +75,10 @@ export type DocumentSearchResponse = {
 
 export type DocumentDetail = {
   document_id: string;
+  organization_id: string;
+  organization_name: string;
+  business_id: string;
+  business_name: string;
   title: string;
   display_name: string;
   description: string | null;
@@ -87,6 +96,7 @@ export type DocumentDetail = {
   version_number: number;
   can_view: boolean;
   can_download: boolean;
+  can_delete: boolean;
   created_at: string;
   updated_at: string;
 };
@@ -150,5 +160,12 @@ export async function createDocumentUrl(
   return apiFetch<{ url: string; expires_in_seconds: number }>(
     `/api/v1/documents/${documentId}/${action}-url`,
     { method: "POST" },
+  );
+}
+
+export async function deleteDocument(documentId: string) {
+  return apiFetch<{ document_id: string; deleted: boolean; message: string }>(
+    `/api/v1/documents/${documentId}`,
+    { method: "DELETE" },
   );
 }

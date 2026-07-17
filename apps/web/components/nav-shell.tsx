@@ -107,7 +107,7 @@ export function NavShell({ children }: { children: ReactNode }) {
   const organizationLabel =
     organization?.name ?? (scopeLoading ? "Loading..." : "No organization");
   const businessLabel =
-    business?.name ?? (scopeLoading ? "Loading..." : "No workspace");
+    business?.name ?? (scopeLoading ? "Loading..." : "No sub-organization");
   const userLabel = user?.display_name || user?.email || "Not signed in";
   const userInitials = userLabel
     .split(/\s|@/)
@@ -202,20 +202,20 @@ export function NavShell({ children }: { children: ReactNode }) {
         )}
       >
         <div className="border-b p-4">
-          <div className="label-caps mb-2 px-1">Active workspace</div>
+          <div className="label-caps mb-2 px-1">Active sub-organization</div>
           <label className="relative flex w-full items-center justify-between rounded-base border bg-surface-muted px-3 py-2.5 text-left text-sm font-semibold">
             {businessLabel}
             <ChevronDown className="h-4 w-4 text-muted-foreground" />
-            <span className="sr-only">Business workspace</span>
+            <span className="sr-only">Sub-organization</span>
             <select
-              aria-label="Business workspace"
+              aria-label="Sub-organization"
               className="absolute inset-0 cursor-pointer opacity-0"
               disabled={!organization?.businesses.length}
               onChange={(event) => setBusinessId(event.target.value)}
               value={business?.id ?? ""}
             >
               {!organization?.businesses.length ? (
-                <option value="">No workspace</option>
+                <option value="">No sub-organization</option>
               ) : null}
               {organization?.businesses.map((item) => (
                 <option key={item.id} value={item.id}>
@@ -330,7 +330,7 @@ export function NavShell({ children }: { children: ReactNode }) {
                 </dd>
               </div>
               <div className="flex justify-between gap-3">
-                <dt className="text-muted-foreground">Workspace</dt>
+                <dt className="text-muted-foreground">Sub-organization</dt>
                 <dd className="text-right font-semibold">{businessLabel}</dd>
               </div>
               <div className="flex justify-between gap-3">
@@ -349,7 +349,8 @@ export function NavShell({ children }: { children: ReactNode }) {
           <div className="border-b p-5">
             <div className="label-caps mb-4">Search guidance</div>
             <p className="text-xs leading-5 text-muted-foreground">
-              Search all or part of a document name in the active workspace.
+              Search all or part of a document name across every authorized
+              sub-organization.
             </p>
           </div>
           <div className="p-5">

@@ -24,6 +24,11 @@ distinct, while `289 / 2` and `289／2` find `289/2`.
 
 The SQL query is membership-scoped before results are ranked:
 
+Interactive search is scoped to one authorized organization and spans all authorized
+sub-organizations by default. An optional `business_id` narrows the result set. Every
+result includes organization and business IDs and display names so the interface can
+identify where the document is stored.
+
 | Match | Base score |
 | --- | ---: |
 | exact original identifier | 1000 |
@@ -57,3 +62,12 @@ audited. Chat parses a possible survey number, resolves authorized exact/normali
 documents first, retrieves chunks only from the chosen document, and returns citations
 plus application action paths. It returns not-found or clarification-required instead
 of using model memory.
+
+## Deletion
+
+Deletion is a recoverable soft delete. Owners, admins, and the original uploader may
+set `deleted_at`; the private storage object is retained. Search, library, detail,
+signed URL, and chat paths exclude deleted documents. Active ingestion is cancelled,
+and the worker rechecks deletion after extraction so it cannot publish a deleted
+document. Delete events are audited with organization, business, document, file, and
+user identifiers.

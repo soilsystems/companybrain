@@ -17,7 +17,7 @@ still requires deployment wiring.
 
 ## Manual verification
 
-1. Sign in and select an authorized organization, business, and domain.
+1. Sign in and select an authorized organization, sub-organization, and domain.
 2. Open `/app/documents/upload`.
 3. Choose a safe supported file. The filename pre-fills the editable document name.
 4. Submit. Confirm that the document name appears before extraction finishes.
@@ -29,6 +29,17 @@ still requires deployment wiring.
    document.
 9. Repeat the detail/search calls with a user from another business; expect 404 or no
    results.
+
+Organization-wide search uses
+`GET /api/v1/documents/search?q=<name>&organization_id=<id>`. Omit `business_id` to
+search every authorized sub-organization or include it to narrow the results. Each
+result reports its `organization_name` and `business_name`.
+
+To remove a mistaken upload, choose Delete and confirm **Move to trash**. This calls
+`DELETE /api/v1/documents/{document_id}`. The document immediately disappears from
+normal search and library views, while its private original remains available for
+administrative recovery. A 403 means the caller is neither an owner/admin nor the
+document uploader.
 
 ## Common states
 

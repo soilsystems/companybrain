@@ -9,6 +9,7 @@ from httpx import ASGITransport, AsyncClient
 from app.core.config import Settings
 from app.main import app
 from app.schemas.documents import UploadIntentRequest
+from app.scripts.configure_soilsystems import SUB_ORGANIZATIONS
 from app.services.document_identifiers import (
     NORMALIZATION_VERSION,
     normalize_identifier,
@@ -86,6 +87,16 @@ def test_upload_schema_allows_name_only_documents() -> None:
     assert payload.survey_number is None
 
 
+def test_soilsystems_sub_organization_names_are_stable() -> None:
+    assert [name for _slug, name in SUB_ORGANIZATIONS] == [
+        "Woods & Spices",
+        "Windflower",
+        "Peppywoods",
+        "Tallsilver",
+        "LaCavana (Resort)",
+    ]
+
+
 async def test_signed_download_is_short_lived_and_sets_filename() -> None:
     async def handler(request: httpx.Request) -> httpx.Response:
         assert request.url.path.endswith("/private/path/record.pdf")
@@ -117,11 +128,15 @@ async def test_signed_download_is_short_lived_and_sets_filename() -> None:
 @pytest.mark.parametrize(
     ("method", "path"),
     [
-        ("GET", f"/api/v1/documents/search?q=288&business_id={uuid.uuid4()}"),
+        (
+            "GET",
+            f"/api/v1/documents/search?q=288&organization_id={uuid.uuid4()}",
+        ),
         ("GET", f"/api/v1/documents?business_id={uuid.uuid4()}"),
         ("GET", f"/api/v1/documents/{uuid.uuid4()}"),
         ("POST", f"/api/v1/documents/{uuid.uuid4()}/view-url"),
         ("POST", f"/api/v1/documents/{uuid.uuid4()}/download-url"),
+        ("DELETE", f"/api/v1/documents/{uuid.uuid4()}"),
         ("POST", "/api/v1/chat/query"),
     ],
 )
